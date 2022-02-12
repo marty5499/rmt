@@ -112,40 +112,37 @@ void ESP32RMTController::init(gpio_num_t pin)
         return;
     esp_err_t espErr = ESP_OK;
 
-    for (int i = 0; i < gMaxChannel; i += gMemBlocks)
+    gOnChannel[0] = NULL;
+
+    // -- RMT configuration for transmission
+    rmt_config_t rmt_tx;
+    memset(&rmt_tx, 0, sizeof(rmt_config_t));
+    rmt_tx.channel = rmt_channel_t(0);
+    rmt_tx.rmt_mode = RMT_MODE_TX;
+    rmt_tx.gpio_num = pin;
+    rmt_tx.mem_block_num = gMemBlocks;
+    rmt_tx.clk_div = DIVIDER;
+    rmt_tx.tx_config.loop_en = false;
+    rmt_tx.tx_config.carrier_level = RMT_CARRIER_LEVEL_LOW;
+    rmt_tx.tx_config.carrier_en = false;
+    rmt_tx.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
+    rmt_tx.tx_config.idle_output_en = true;
+
+    // -- Apply the configuration
+    espErr = rmt_config(&rmt_tx);
+    FASTLED_DEBUG("rmt_config result: %d", espErr);
+
+    if (FASTLED_RMT_BUILTIN_DRIVER)
     {
-        gOnChannel[i] = NULL;
-
-        // -- RMT configuration for transmission
-        rmt_config_t rmt_tx;
-        memset(&rmt_tx, 0, sizeof(rmt_config_t));
-        rmt_tx.channel = rmt_channel_t(i);
-        rmt_tx.rmt_mode = RMT_MODE_TX;
-        rmt_tx.gpio_num = pin;
-        rmt_tx.mem_block_num = gMemBlocks;
-        rmt_tx.clk_div = DIVIDER;
-        rmt_tx.tx_config.loop_en = false;
-        rmt_tx.tx_config.carrier_level = RMT_CARRIER_LEVEL_LOW;
-        rmt_tx.tx_config.carrier_en = false;
-        rmt_tx.tx_config.idle_level = RMT_IDLE_LEVEL_LOW;
-        rmt_tx.tx_config.idle_output_en = true;
-
-        // -- Apply the configuration
-        espErr = rmt_config(&rmt_tx);
-        FASTLED_DEBUG("rmt_config result: %d", espErr);
-
-        if (FASTLED_RMT_BUILTIN_DRIVER)
-        {
-            rmt_driver_install(rmt_channel_t(i), 0, 0);
-        }
-        else
-        {
-            // -- Set up the RMT to send 32 bits of the pulse buffer and then
-            //    generate an interrupt. When we get this interrupt we
-            //    fill the other part in preparation (like double-buffering)
-            espErr = rmt_set_tx_thr_intr_en(rmt_channel_t(i), true, PULSES_PER_FILL);
-            FASTLED_DEBUG("rmt_set_tx_thr_intr_en result: %d", espErr);
-        }
+        rmt_driver_install(rmt_channel_t(0), 0, 0);
+    }
+    else
+    {
+        // -- Set up the RMT to send 32 bits of the pulse buffer and then
+        //    generate an interrupt. When we get this interrupt we
+        //    fill the other part in preparation (like double-buffering)
+        espErr = rmt_set_tx_thr_intr_en(rmt_channel_t(0), true, PULSES_PER_FILL);
+        FASTLED_DEBUG("rmt_set_tx_thr_intr_en result: %d", espErr);
     }
 
     // -- Create a semaphore to block execution until all the controllers are done
@@ -250,49 +247,26 @@ void IRAM_ATTR ESP32RMTController::startOnChannel(int channel)
     esp_err_t espErr = ESP_OK;
     // -- Assign this channel and configure the RMT
     mRMT_channel = rmt_channel_t(channel);
-
     // -- Store a reference to this controller, so we can get it
     //    inside the interrupt handler
     gOnChannel[channel] = this;
-
     // -- Assign the pin to this channel
-#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 4, 0)
     espErr = rmt_set_gpio(mRMT_channel, RMT_MODE_TX, mPin, false);
-    FASTLED_DEBUG("rmt_set_gpio result: %d", espErr);
-#else
-    espErr = rmt_set_pin(mRMT_channel, RMT_MODE_TX, mPin);
-    FASTLED_DEBUG("rrmt_set_pin result: %d", espErr);
-#endif
-
-    if (FASTLED_RMT_BUILTIN_DRIVER)
-    {
-        // -- Use the built-in RMT driver to send all the data in one shot
-        rmt_register_tx_end_callback(doneOnChannel, 0);
-        rmt_write_items(mRMT_channel, mBuffer, mBufferSize, false);
-    }
-    else
-    {
-        // -- Use our custom driver to send the data incrementally
-
-        // -- Initialize the counters that keep track of where we are in
-        //    the pixel data and the RMT buffer
-        mRMT_mem_start = &(RMTMEM.chan[mRMT_channel].data32[0].val);
-        mRMT_mem_ptr = mRMT_mem_start;
-        mCur = 0;
-        mWhichHalf = 0;
-        mLastFill = 0;
-
-        // -- Fill both halves of the RMT buffer (a totaly of 64 bits of pixel data)
-        fillNext(false);
-        fillNext(false);
-
-        // -- Turn on the interrupts
-        espErr = rmt_set_tx_intr_en(mRMT_channel, true);
-        FASTLED_DEBUG("rmt_set_tx_intr_en result: %d", espErr);
-
-        // -- Kick off the transmission
-        tx_start();
-    }
+    // -- Initialize the counters that keep track of where we are in
+    //    the pixel data and the RMT buffer
+    mRMT_mem_start = &(RMTMEM.chan[mRMT_channel].data32[0].val);
+    mRMT_mem_ptr = mRMT_mem_start;
+    mCur = 0;
+    mWhichHalf = 0;
+    mLastFill = 0;
+    // -- Fill both halves of the RMT buffer (a totaly of 64 bits of pixel data)
+    fillNext(false);
+    fillNext(false);
+    // -- Turn on the interrupts
+    espErr = rmt_set_tx_intr_en(mRMT_channel, true);
+    FASTLED_DEBUG("rmt_set_tx_intr_en result: %d", espErr);
+    // -- Kick off the transmission
+    tx_start();
 }
 
 // -- Start RMT transmission
@@ -301,7 +275,7 @@ void IRAM_ATTR ESP32RMTController::tx_start()
 {
     // rmt_tx_start(mRMT_channel, true);
     // Inline the code for rmt_tx_start, so it can be placed in IRAM
-//#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32
+    //#elif CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32
     // rmt_ll_tx_reset_pointer(&RMT, mRMT_channel)
     RMT.conf_ch[mRMT_channel].conf1.mem_rd_rst = 1;
     RMT.conf_ch[mRMT_channel].conf1.mem_rd_rst = 0;
@@ -341,7 +315,7 @@ void IRAM_ATTR ESP32RMTController::doneOnChannel(rmt_channel_t channel, void *ar
     gOnChannel[channel] = NULL;
     portBASE_TYPE HPTaskAwoken = 0;
     xSemaphoreGiveFromISR(gTX_sem, &HPTaskAwoken);
-    //if (HPTaskAwoken == pdTRUE)  portYIELD_FROM_ISR();
+    // if (HPTaskAwoken == pdTRUE)  portYIELD_FROM_ISR();
 }
 
 // -- Custom interrupt handler
@@ -353,30 +327,24 @@ void IRAM_ATTR ESP32RMTController::interruptHandler(void *arg)
     // -- The basic structure of this code is borrowed from the
     //    interrupt handler in esp-idf/components/driver/rmt.c
     uint32_t intr_st = RMT.int_st.val;
-    uint8_t channel;
-
-    channel = 0;
     //#if CONFIG_IDF_TARGET_ESP32S2
-    int tx_done_bit = channel * 3;
-    int tx_next_bit = channel + 12;
+    int tx_done_bit = 0;
+    int tx_next_bit = 12;
 
-    ESP32RMTController *pController = gOnChannel[channel];
-    if (pController != NULL)
+    ESP32RMTController *pController = gOnChannel[0];
+    if (intr_st & BIT(tx_next_bit))
     {
-        if (intr_st & BIT(tx_next_bit))
+        // -- More to send on this channel
+        pController->fillNext(true);
+        RMT.int_clr.val |= BIT(tx_next_bit);
+    }
+    else
+    {
+        // -- Transmission is complete on this channel
+        if (intr_st & BIT(tx_done_bit))
         {
-            // -- More to send on this channel
-            pController->fillNext(true);
-            RMT.int_clr.val |= BIT(tx_next_bit);
-        }
-        else
-        {
-            // -- Transmission is complete on this channel
-            if (intr_st & BIT(tx_done_bit))
-            {
-                RMT.int_clr.val |= BIT(tx_done_bit);
-                doneOnChannel(rmt_channel_t(channel), 0);
-            }
+            RMT.int_clr.val |= BIT(tx_done_bit);
+            doneOnChannel(rmt_channel_t(0), 0);
         }
     }
 }
@@ -395,48 +363,30 @@ void IRAM_ATTR ESP32RMTController::fillNext(bool check_time)
             int32_t delta = (now - mLastFill);
             if (delta > (int32_t)mMaxCyclesPerFill)
             {
-                // Serial.print(delta);
-                // Serial.print(" BAIL ");
-                // Serial.println(mCur);
-                // rmt_tx_stop(mRMT_channel);
-                // Inline the code for rmt_tx_stop, so it can be placed in IRAM
-                /** -- Go back to the original strategy of just setting mCur = mSize
-                       and letting the regular 'stop' process happen
-                * mRMT_mem_start = 0;
-                RMT.int_ena.val &= ~(1 << (mRMT_channel * 3));
-                RMT.conf_ch[mRMT_channel].conf1.tx_start = 0;
-                RMT.conf_ch[mRMT_channel].conf1.mem_rd_rst = 1;
-                RMT.conf_ch[mRMT_channel].conf1.mem_rd_rst = 0;
-                */
                 mCur = mSize;
             }
         }
     }
     mLastFill = now;
-
     // -- Get the zero and one values into local variables
     register uint32_t one_val = mOne.val;
     register uint32_t zero_val = mZero.val;
 
     // -- Use locals for speed
     volatile register uint32_t *pItem = mRMT_mem_ptr;
-
     for (register int i = 0; i < PULSES_PER_FILL / 8; i++)
     {
         if (mCur < mSize)
         {
-
             // -- Get the next four bytes of pixel data
             register uint32_t pixeldata = mPixelData[mCur] << 24;
             mCur++;
-
             // Shift bits out, MSB first, setting RMTMEM.chan[n].data32[x] to the
             // rmt_item32_t value corresponding to the buffered bit value
             for (register uint32_t j = 0; j < 8; j++)
             {
                 *pItem++ = (pixeldata & 0x80000000L) ? one_val : zero_val;
                 // Replaces: RMTMEM.chan[mRMT_channel].data32[mCurPulse].val = val;
-
                 pixeldata <<= 1;
             }
         }

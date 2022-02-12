@@ -18,7 +18,7 @@
 #include <PubSubClient.h>
 #include <main.h>
 
-#define NUM_LEDS 250
+#define NUM_LEDS 25
 #define DATA_PIN 18
 const char *_ssid = "KingKit_2.4G";
 const char *_password = "webduino";
