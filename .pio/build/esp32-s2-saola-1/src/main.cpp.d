@@ -189,47 +189,33 @@
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/Udp.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/cbuf.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-cpu.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/FastLED.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/cpp_compat.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/FastLED.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastled_config.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/led_sysdefs.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/platforms/esp/32/led_sysdefs_esp32.h \
+ lib/FastLED/src/FastLED.h lib/FastLED/src/cpp_compat.h \
+ lib/FastLED/src/FastLED.h lib/FastLED/src/fastled_config.h \
+ lib/FastLED/src/led_sysdefs.h \
+ lib/FastLED/src/platforms/esp/32/led_sysdefs_esp32.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastled_delay.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/bitswap.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/controller.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/pixeltypes.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion/math8.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion/scale8.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion/scale8.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion/random8.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/lib8tion/trig8.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/color.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastpin.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastspi_types.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/dmx.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/platforms.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/platforms/esp/32/fastled_esp32.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/platforms/esp/32/fastpin_esp32.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/platforms/esp/32/clockless_rmt_esp32.h \
+ lib/FastLED/src/fastled_delay.h lib/FastLED/src/bitswap.h \
+ lib/FastLED/src/controller.h lib/FastLED/src/pixeltypes.h \
+ lib/FastLED/src/lib8tion.h lib/FastLED/src/lib8tion/math8.h \
+ lib/FastLED/src/lib8tion/scale8.h lib/FastLED/src/lib8tion/scale8.h \
+ lib/FastLED/src/lib8tion/random8.h lib/FastLED/src/lib8tion/trig8.h \
+ lib/FastLED/src/color.h lib/FastLED/src/fastpin.h \
+ lib/FastLED/src/fastspi_types.h lib/FastLED/src/dmx.h \
+ lib/FastLED/src/platforms.h \
+ lib/FastLED/src/platforms/esp/32/fastled_esp32.h \
+ lib/FastLED/src/platforms/esp/32/fastpin_esp32.h \
+ lib/FastLED/src/platforms/esp/32/clockless_rmt_esp32.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/driver/include/driver/rmt.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_ringbuf/include/freertos/ringbuf.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/soc/esp32s2/include/soc/rmt_struct.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/hal/include/hal/rmt_types.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/driver/include/driver/periph_ctrl.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/soc/esp32s2/include/soc/periph_defs.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastled_progmem.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/hsv2rgb.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/colorutils.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/pixelset.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/colorpalettes.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/noise.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/power_mgt.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastspi.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/fastspi_bitbang.h \
- .pio/libdeps/esp32-s2-saola-1/FastLED/src/chipsets.h \
+ lib/FastLED/src/fastled_progmem.h lib/FastLED/src/hsv2rgb.h \
+ lib/FastLED/src/colorutils.h lib/FastLED/src/pixelset.h \
+ lib/FastLED/src/colorpalettes.h lib/FastLED/src/noise.h \
+ lib/FastLED/src/power_mgt.h lib/FastLED/src/fastspi.h \
+ lib/FastLED/src/fastspi_bitbang.h lib/FastLED/src/chipsets.h \
  .pio/libdeps/esp32-s2-saola-1/PubSubClient/src/PubSubClient.h src/main.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USB.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USBCDC.h

@@ -173,7 +173,7 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #endif
 
 // -- Configuration constants
-#define DIVIDER       2 /* 4, 8 still seem to work, but timings become marginal */
+#define DIVIDER       8 /* 4, 8 still seem to work, but timings become marginal */
 
 // -- RMT memory configuration
 //    By default we use two memory blocks for each RMT channel instead of 1. The
@@ -381,7 +381,6 @@ protected:
         // -- Make sure the buffer is allocated
         int size_in_bytes = pixels.size() * 3;
         uint8_t * pData = mRMTController.getPixelBuffer(size_in_bytes);
-
         // -- This might be faster
         while (pixels.has(1)) {
             *pData++ = pixels.loadAndScale0();
@@ -396,39 +395,10 @@ protected:
     //    This is the main entry point for the controller.
     virtual void showPixels(PixelController<RGB_ORDER> & pixels)
     {
-        if (FASTLED_RMT_BUILTIN_DRIVER) {
-            convertAllPixelData(pixels);
-        } else {
-            loadPixelData(pixels);
-        }
-
+        loadPixelData(pixels);
         mRMTController.showPixels();
     }
 
-    // -- Convert all pixels to RMT pulses
-    //    This function is only used when the user chooses to use the
-    //    built-in RMT driver, which needs all of the RMT pulses
-    //    up-front.
-    void convertAllPixelData(PixelController<RGB_ORDER> & pixels)
-    {
-        // -- Make sure the data buffer is allocated
-        mRMTController.initPulseBuffer(pixels.size() * 3);
-
-        // -- Cycle through the R,G, and B values in the right order,
-        //    storing the pulses in the big buffer
-
-        uint32_t byteval;
-        while (pixels.has(1)) {
-            byteval = pixels.loadAndScale0();
-            mRMTController.convertByte(byteval);
-            byteval = pixels.loadAndScale1();
-            mRMTController.convertByte(byteval);
-            byteval = pixels.loadAndScale2();
-            mRMTController.convertByte(byteval);
-            pixels.advanceData();
-            pixels.stepDithering();
-        }
-    }
 };
 
 
