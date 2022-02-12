@@ -1,16 +1,16 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp32-hal-cpu.h>
-/*
+//*
 //#define FASTLED_ESP32_I2S true
 //#define FASTLED_RMT_SERIAL_DEBUG 1
+//#define FASTLED_ESP32_FLASH_LOCK 1
+//#define FASTLED_ALLOW_INTERRUPTS 0
+//#define FASTLED_INTERRUPT_RETRY_COUNT 0
 #define FASTLED_RMT_MEM_BLOCKS 2
 #define FASTLED_RMT_MAX_CHANNELS 1
 #define FASTLED_RMT_MAX_CONTROLLERS 1
-#define FASTLED_ESP32_FLASH_LOCK 1
 #define FASTLED_RMT_MEM_WORDS_PER_CHANNEL 64
-#define FASTLED_ALLOW_INTERRUPTS 0
-#define FASTLED_INTERRUPT_RETRY_COUNT 0
 //*/
 
 #include <FastLED.h>
@@ -33,10 +33,6 @@ int value = 0;
 
 void callback(char *topic, byte *message, unsigned int length)
 {
-  /*
-  USBSerial.print("Msgs: ");
-  USBSerial.print(topic);
-  USBSerial.print(". Message: ");
   String messageTemp;
   for (int i = 0; i < length; i++)
   {
@@ -44,22 +40,10 @@ void callback(char *topic, byte *message, unsigned int length)
     messageTemp += (char)message[i];
   }
   USBSerial.println();
-  //*/
-  for (byte i = 0; i < 25; i++)
-  {
-    leds[i] = 0;
-    FastLED.show();
-  }
   if (++value % 2 == 0)
-  {
-    // USBSerial.println("on");
-    leds[12] = 0x030000;
-  }
+    leds[12] = 0x080000;
   else
-  {
-    // USBSerial.println("off");
-    leds[12] = 0x000000;
-  }
+    leds[12] = 0x000500;
   FastLED.show();
 }
 

@@ -5,7 +5,7 @@
 
 #define FASTLED_INTERNAL
 #include "FastLED.h"
-
+#include "main.h"
 // -- Forward reference
 class ESP32RMTController;
 
