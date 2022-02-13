@@ -31,7 +31,6 @@ void ESP32Led::Init()
 {
 	if (_initDone)
 		return;
-
 	if (_debug)
 		Serial.printf("WS2812Led pin=%d\n", _pin);
 	pinMode(_pin, OUTPUT);

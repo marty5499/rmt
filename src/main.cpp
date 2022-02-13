@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <esp32-hal-cpu.h>
-
 #include "WS2812Led.h"
 
 #include <PubSubClient.h>
@@ -23,6 +22,9 @@ char msg[50];
 int value = 0;
 bool debugState = true;
 bool sw = true;
+
+USBCDC USBSerial;
+ESP32Timer ITimer0(0);
 
 void TimerHandler0()
 {
@@ -116,10 +118,9 @@ void remote()
 
 void setup()
 {
-  setCpuFrequencyMhz(240);
+  setCpuFrequencyMhz(80);
   debugMode(true);
   debugMsg("GoGoGo...");
-  delay(1000);
   wsLED.Brightness(3);
   wsLED.UpdateAll(wsLED.RED);
   delay(100);
