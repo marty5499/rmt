@@ -13,8 +13,7 @@
 class WS2812LedBase {
 public:
 	enum LedColorModel {
-		LED_RGB = 3,		// 3 channels equals 24 bit
-		LED_RGBW = 4,		// 3 channels equals 32 bit
+		LED_RGB = 3		// 3 channels equals 32 bit
 	};
 	/*
 	 * some predefined LED colors for easy use of color names.

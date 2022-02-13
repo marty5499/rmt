@@ -52,11 +52,6 @@ void WS2812LedBase::Update(uint8_t red, uint8_t green, uint8_t blue, uint8_t whi
 		*curRGBValue++ = red;
 		*curRGBValue++ = blue;
 		break;
-	case LED_RGBW:				//  4 channels equals 32 bit
-		*curRGBValue++ = green; // the WS2812 order is Green/Red/Blue/White
-		*curRGBValue++ = red;
-		*curRGBValue++ = blue;
-		*curRGBValue++ = white;
 	default:
 		break;
 	}
