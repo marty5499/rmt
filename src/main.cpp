@@ -26,8 +26,8 @@ bool sw = true;
 
 void TimerHandler0()
 {
-  //USBSerial.print("ITimer0: millis() = ");
-  //USBSerial.println(millis());
+  // USBSerial.print("ITimer0: millis() = ");
+  // USBSerial.println(millis());
   //*
   if (sw)
     wsLED.UpdateAll(wsLED.RED);

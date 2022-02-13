@@ -97,9 +97,7 @@ void ESP32Led::Show(void)
 {
 	if (!_initDone)
 		Init();
-	delay(10);
 	ESP_ERROR_CHECK(rmt_wait_tx_done(_config.channel, portMAX_DELAY)); // wait for pending LED TX request
-
 	/*
 	 * convert the RGB color (24 bits) into the RMT buffer consisting of
 	 * rmt_item32_t items for each bit, 24 bit (3 x 8) per led
