@@ -1,28 +1,18 @@
-#include <main.h>
+#include <Arduino.h>
 #include <WiFi.h>
 #include <esp32-hal-cpu.h>
-//*
-//#define FASTLED_ESP32_I2S true
-//#define FASTLED_RMT_SERIAL_DEBUG 1
-//#define FASTLED_ESP32_FLASH_LOCK 1
-//#define FASTLED_ALLOW_INTERRUPTS 0
-//#define FASTLED_INTERRUPT_RETRY_COUNT 0
-#define FASTLED_RMT_MEM_BLOCKS 2
-#define FASTLED_RMT_MAX_CHANNELS 1
-#define FASTLED_RMT_MAX_CONTROLLERS 1
-#define FASTLED_RMT_MEM_WORDS_PER_CHANNEL 64
-#define CONFIG_IDF_TARGET_ESP32S2 1
-//*/
 
-#include <FastLED.h>
+#include "WS2812Led.h"
+
 #include <PubSubClient.h>
+#include <main.h>
 
-#define NUM_LEDS 25
-#define DATA_PIN 18
+static const uint8_t WS2812LedPin = 18;
+WS2812Led wsLED(WS2812LedPin, 25);
+
+// WiFi
 const char *_ssid = "webduino.io";
 const char *_password = "webduino";
-CRGB leds[NUM_LEDS];
-
 const char *mqtt_server = "mqtt1.webduino.io";
 long cnt = 0;
 
@@ -32,25 +22,18 @@ long lastMsg = 0;
 char msg[50];
 int value = 0;
 bool debugState = true;
-
-
 bool sw = true;
 
-
-
-void flashLed()
+void TimerHandler0()
 {
-  FastLED.clear();
-  FastLED.show();
-  while (true)
-  {
-    leds[12] = 0x050000;
-    FastLED.show();
-    delay(100);
-    leds[12] = 0x000500;
-    FastLED.show();
-    delay(100);
-  }
+  //USBSerial.print("ITimer0: millis() = ");
+  //USBSerial.println(millis());
+  //*
+  if (sw)
+    wsLED.UpdateAll(wsLED.RED);
+  else
+    wsLED.UpdateAll(wsLED.BLUE);
+  //*/
 }
 
 void debugMsg(const char *msg)
@@ -69,16 +52,6 @@ void debugStrMsg(String str)
   }
 }
 
-void IRAM_ATTR TimerHandler0()
-{
-  //USBSerial.print("ITimer0: millis() = ");
-  //USBSerial.println(millis());
-  //sw = !sw;
-  //leds[0] = sw ? 0x030000 : 0x000300;
-  FastLED.show();
-}
-
-
 void callback(char *topic, byte *message, unsigned int length)
 {
   String messageTemp;
@@ -87,11 +60,7 @@ void callback(char *topic, byte *message, unsigned int length)
     messageTemp += (char)message[i];
   }
   debugStrMsg(messageTemp);
-  if (++value % 2 == 0)
-    leds[12] = 0x050000;
-  else
-    leds[12] = 0x000500;
-  //FastLED.show();
+  sw = !sw;
 }
 
 void startMQTT()
@@ -114,7 +83,7 @@ void startWiFi()
   WiFi.begin(_ssid, _password);
   // Warte auf Verbindung
   while ((WiFi.status() != WL_CONNECTED))
-  { 
+  {
     WiFi.begin(_ssid, _password);
     delay(3000);
     debugStrMsg("connecting...");
@@ -129,7 +98,6 @@ void startWiFi()
   }
 }
 
-
 void debugMode(bool t)
 {
   debugState = t;
@@ -140,41 +108,24 @@ void debugMode(bool t)
   }
 }
 
-void local()
-{
-  flashLed();
-}
-
 void remote()
 {
   startWiFi();
   startMQTT();
 }
 
-void initLED(uint32_t color)
-{
-  for (byte i = 0; i < NUM_LEDS; i++)
-  {
-    leds[i] = color;
-  }
-  FastLED.show();
-}
-
 void setup()
 {
   setCpuFrequencyMhz(240);
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  FastLED.clear();
   debugMode(true);
   debugMsg("GoGoGo...");
-  pinMode(DATA_PIN, OUTPUT);
-  ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 30, TimerHandler0);
-  initLED(0x050000);
+  delay(1000);
+  wsLED.Brightness(3);
+  wsLED.UpdateAll(wsLED.RED);
+  delay(100);
   remote();
-  //local();
-  initLED(0x000200);
-  //USBSerial.print(">>>>>>");
-  //USBSerial.println(MAX_PULSES);
+  wsLED.UpdateAll(wsLED.GREEN);
+  ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 10, TimerHandler0);
 }
 
 void loop()
