@@ -173,7 +173,7 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #endif
 
 // -- Configuration constants
-#define DIVIDER       8 /* 4, 8 still seem to work, but timings become marginal */
+#define DIVIDER       2 /* 4, 8 still seem to work, but timings become marginal */
 
 // -- RMT memory configuration
 //    By default we use two memory blocks for each RMT channel instead of 1. The
@@ -196,7 +196,8 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #endif 
 #endif
 
-#define MAX_PULSES (FASTLED_RMT_MEM_WORDS_PER_CHANNEL * FASTLED_RMT_MEM_BLOCKS)
+//#define MAX_PULSES ( FASTLED_RMT_MEM_WORDS_PER_CHANNEL * FASTLED_RMT_MEM_BLOCKS)
+#define MAX_PULSES ( 64*2 )
 #define PULSES_PER_FILL    (MAX_PULSES / 2)              /* Half of the channel buffer */
 
 // -- Convert ESP32 CPU cycles to RMT device cycles, taking into account the divider

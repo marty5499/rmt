@@ -21,7 +21,6 @@ static ESP32RMTController *gOnChannel[FASTLED_RMT_MAX_CHANNELS];
 static int gNumControllers = 0;
 static int gNumStarted = 0;
 static int gNumDone = 0;
-static int gNext = 0;
 
 static intr_handle_t gRMT_intr_handle = NULL;
 
@@ -179,51 +178,38 @@ void IRAM_ATTR ESP32RMTController::showPixels()
         spi_flash_op_lock();
 #endif
     }
-
-    // -- Keep track of the number of strips we've seen
-    gNumStarted++;
-
     // -- The last call to showPixels is the one responsible for doing
     //    all of the actual worl
-    if (gNumStarted == gNumControllers)
-    {
-        gNext = 0;
 
-        // -- This Take always succeeds immediately
-        xSemaphoreTake(gTX_sem, portMAX_DELAY);
+    // -- This Take always succeeds immediately
+    xSemaphoreTake(gTX_sem, portMAX_DELAY);
 
-        // -- Make sure it's been at least 50us since last show
-        gWait.wait();
+    // -- Make sure it's been at least 50us since last show
+    gWait.wait();
 
-        // -- First, fill all the available channels
-        int channel = 0;
-        while (channel < gMaxChannel && gNext < gNumControllers)
-        {
-            ESP32RMTController::startNext(channel);
-            // -- Important: when we use more than one memory block, we need to
-            //    skip the channels that would otherwise overlap in memory.
-            channel += gMemBlocks;
-        }
+    // -- First, fill all the available channels
+    int channel = 0;
+    ESP32RMTController::startNext(channel);
+    // -- Important: when we use more than one memory block, we need to
+    //    skip the channels that would otherwise overlap in memory.
+    channel += gMemBlocks;
 
-        // -- Wait here while the data is sent. The interrupt handler
-        //    will keep refilling the RMT buffers until it is all
-        //    done; then it gives the semaphore back.
-        xSemaphoreTake(gTX_sem, portMAX_DELAY);
-        xSemaphoreGive(gTX_sem);
+    // -- Wait here while the data is sent. The interrupt handler
+    //    will keep refilling the RMT buffers until it is all
+    //    done; then it gives the semaphore back.
+    xSemaphoreTake(gTX_sem, portMAX_DELAY);
+    xSemaphoreGive(gTX_sem);
 
-        // -- Make sure we don't call showPixels too quickly
-        gWait.mark();
+    // -- Make sure we don't call showPixels too quickly
+    gWait.mark();
 
-        // -- Reset the counters
-        gNumStarted = 0;
-        gNumDone = 0;
-        gNext = 0;
+    // -- Reset the counters
+    gNumDone = 0;
 
 #if FASTLED_ESP32_FLASH_LOCK == 1
-        // -- Release the lock on flash operations
-        spi_flash_op_unlock();
+    // -- Release the lock on flash operations
+    spi_flash_op_unlock();
 #endif
-    }
 }
 
 // -- Start up the next controller
@@ -231,12 +217,8 @@ void IRAM_ATTR ESP32RMTController::showPixels()
 //    appropriate startOnChannel method of the given controller.
 void IRAM_ATTR ESP32RMTController::startNext(int channel)
 {
-    if (gNext < gNumControllers)
-    {
-        ESP32RMTController *pController = gControllers[gNext];
-        pController->startOnChannel(channel);
-        gNext++;
-    }
+    ESP32RMTController *pController = gControllers[0];
+    pController->startOnChannel(channel);
 }
 
 // -- Start this controller on the given channel
@@ -324,6 +306,9 @@ void IRAM_ATTR ESP32RMTController::doneOnChannel(rmt_channel_t channel, void *ar
 //    next half of the RMT buffer with data.
 void IRAM_ATTR ESP32RMTController::interruptHandler(void *arg)
 {
+    //
+    //portDISABLE_INTERRUPTS();
+    //portENABLE_INTERRUPTS();
     // -- The basic structure of this code is borrowed from the
     //    interrupt handler in esp-idf/components/driver/rmt.c
     uint32_t intr_st = RMT.int_st.val;
@@ -397,7 +382,6 @@ void IRAM_ATTR ESP32RMTController::fillNext(bool check_time)
             *pItem++ = 0;
         }
     }
-
     // -- Flip to the other half, resetting the pointer if necessary
     mWhichHalf++;
     if (mWhichHalf == 2)
@@ -405,7 +389,6 @@ void IRAM_ATTR ESP32RMTController::fillNext(bool check_time)
         pItem = mRMT_mem_start;
         mWhichHalf = 0;
     }
-
     // -- Store the new pointer back into the object
     mRMT_mem_ptr = pItem;
 }
@@ -416,29 +399,13 @@ void IRAM_ATTR ESP32RMTController::fillNext(bool check_time)
 //    This function is only used when the built-in RMT driver is chosen
 void ESP32RMTController::initPulseBuffer(int size_in_bytes)
 {
-    if (mBuffer == 0)
-    {
-        // -- Each byte has 8 bits, each bit needs a 32-bit RMT item
-        mBufferSize = size_in_bytes * 8 * 4;
-        mBuffer = (rmt_item32_t *)calloc(mBufferSize, sizeof(rmt_item32_t));
-    }
-    mCurPulse = 0;
 }
 
 // -- Convert a byte into RMT pulses
 //    This function is only used when the built-in RMT driver is chosen
 void ESP32RMTController::convertByte(uint32_t byteval)
 {
-    // -- Write one byte's worth of RMT pulses to the big buffer
-    byteval <<= 24;
-    for (register uint32_t j = 0; j < 8; j++)
-    {
-        mBuffer[mCurPulse] = (byteval & 0x80000000L) ? mOne : mZero;
-        byteval <<= 1;
-        mCurPulse++;
-    }
 }
-
 #endif // ! FASTLED_ESP32_I2S
 
 #endif // ESP32

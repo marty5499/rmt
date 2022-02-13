@@ -20,7 +20,7 @@
 
 #define NUM_LEDS 25
 #define DATA_PIN 18
-const char *_ssid = "KingKit_2.4G";
+const char *_ssid = "webduino.io";
 const char *_password = "webduino";
 CRGB leds[NUM_LEDS];
 
@@ -108,10 +108,10 @@ void flashLed()
   {
     leds[12] = 0x050000;
     FastLED.show();
-    delay(200);
+    delay(100);
     leds[12] = 0x000500;
     FastLED.show();
-    delay(200);
+    delay(100);
   }
 }
 
@@ -150,13 +150,15 @@ void setup()
   setCpuFrequencyMhz(240);
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   FastLED.clear();
-  debugMode(false);
+  debugMode(true);
   debugMsg("GoGoGo...");
   pinMode(DATA_PIN, OUTPUT);
   initLED(0x050000);
   remote();
   //local();
   initLED(0x000200);
+  //USBSerial.print(">>>>>>");
+  //USBSerial.println(MAX_PULSES);
 }
 
 void loop()
