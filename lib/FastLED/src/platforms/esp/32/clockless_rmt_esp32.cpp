@@ -172,20 +172,15 @@ void IRAM_ATTR ESP32RMTController::showPixels()
     {
         // -- First controller: make sure everything is set up
         ESP32RMTController::init(mPin);
-
-#if FASTLED_ESP32_FLASH_LOCK == 1
-        // -- Make sure no flash operations happen right now
-        spi_flash_op_lock();
-#endif
     }
     // -- The last call to showPixels is the one responsible for doing
     //    all of the actual worl
 
     // -- This Take always succeeds immediately
-    xSemaphoreTake(gTX_sem, portMAX_DELAY);
+    // xSemaphoreTake(gTX_sem, portMAX_DELAY);
 
     // -- Make sure it's been at least 50us since last show
-    gWait.wait();
+    //remove gWait.wait();
 
     // -- First, fill all the available channels
     int channel = 0;
@@ -197,19 +192,15 @@ void IRAM_ATTR ESP32RMTController::showPixels()
     // -- Wait here while the data is sent. The interrupt handler
     //    will keep refilling the RMT buffers until it is all
     //    done; then it gives the semaphore back.
-    xSemaphoreTake(gTX_sem, portMAX_DELAY);
-    xSemaphoreGive(gTX_sem);
+    //remove xSemaphoreTake(gTX_sem, portMAX_DELAY);
+    //remove xSemaphoreGive(gTX_sem);
 
     // -- Make sure we don't call showPixels too quickly
-    gWait.mark();
+    //remove gWait.mark();
 
     // -- Reset the counters
     gNumDone = 0;
 
-#if FASTLED_ESP32_FLASH_LOCK == 1
-    // -- Release the lock on flash operations
-    spi_flash_op_unlock();
-#endif
 }
 
 // -- Start up the next controller

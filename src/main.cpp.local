@@ -1,0 +1,17 @@
+#include <FastLED.h>
+#define NUM_LEDS 25
+#define DATA_PIN 18
+CRGB leds[NUM_LEDS];
+
+void setup() { 
+    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
+}
+
+void loop() { 
+  leds[0] = 0x030000;
+  FastLED.show();
+  delay(250);
+  leds[0] = 0x000000;
+  FastLED.show();
+  delay(250);
+}

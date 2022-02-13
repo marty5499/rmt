@@ -1,0 +1,50 @@
+#include <main.h>
+#define USING_ESP32_S2_TIMER_INTERRUPT true
+
+// These define's must be placed at the beginning before #include "TimerInterrupt_Generic.h"
+// _TIMERINTERRUPT_LOGLEVEL_ from 0 to 4
+// Don't define _TIMERINTERRUPT_LOGLEVEL_ > 0. Only for special ISR debugging only. Can hang the system.
+#define TIMER_INTERRUPT_DEBUG 1
+#define _TIMERINTERRUPT_LOGLEVEL_ 0
+#include "Arduino.h"
+#include "ESP32TimerInterrupt.h"
+
+#include <FastLED.h>
+#define NUM_LEDS 25
+#define DATA_PIN 18
+CRGB leds[NUM_LEDS];
+bool sw = true;
+
+
+void  TimerHandler0()
+{
+  USBSerial.print("ITimer0: millis() = ");
+  USBSerial.println(millis());
+  sw = !sw;
+  leds[0] = sw ? 0x030000 : 0x000300;
+  FastLED.show();
+}
+
+#define TIMER0_INTERVAL_MS 1000
+ESP32Timer ITimer0(0);
+
+void setup()
+{
+  USB.begin();
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS); // GRB ordering is assumed
+  delay(3000);
+  USBSerial.begin(115200);
+  USBSerial.println("GoGoGo....");
+  // Interval in microsecs
+  if (ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler0))
+  {
+    USBSerial.print(F("Starting  ITimer0 OK, millis() = "));
+    USBSerial.println(millis());
+  }
+  else
+    USBSerial.println(F("Can't set ITimer0. Select another freq. or timer"));
+}
+
+void loop()
+{
+}

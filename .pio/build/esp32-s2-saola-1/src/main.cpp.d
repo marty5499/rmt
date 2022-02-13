@@ -1,4 +1,4 @@
-.pio/build/esp32-s2-saola-1/src/main.cpp.o: src/main.cpp \
+.pio/build/esp32-s2-saola-1/src/main.cpp.o: src/main.cpp src/main.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/Arduino.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp_arduino_version.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/freertos/include/freertos/FreeRTOS.h \
@@ -126,12 +126,7 @@
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/spi_flash/include/esp_spi_flash_counters.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_hw_support/include/soc/esp32/spiram.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/variants/esp32s2/pins_arduino.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiType.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiSTA.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiGeneric.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USB.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_event/include/esp_event.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_event/include/esp_event_base.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_event/include/esp_event_legacy.h \
@@ -172,6 +167,17 @@
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/lwip/lwip/src/include/lwip/ip6_zone.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/lwip/include/apps/dhcpserver/dhcpserver.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_netif/include/esp_netif_sta_list.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USBCDC.h \
+ .pio/libdeps/esp32-s2-saola-1/ESP32TimerInterrupt/src/ESP32TimerInterrupt.h \
+ .pio/libdeps/esp32-s2-saola-1/ESP32TimerInterrupt/src/ESP32_TimerInterrupt.h \
+ .pio/libdeps/esp32-s2-saola-1/ESP32TimerInterrupt/src/TimerInterrupt_Generic_Debug.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/esp32-hal-timer.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFi.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/Print.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/IPv6Address.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiType.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiSTA.h \
+ /Users/marty/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src/WiFiGeneric.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/esp_wifi/include/esp_smartconfig.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/wifi_provisioning/include/wifi_provisioning/manager.h \
  /Users/marty/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32s2/include/protocomm/include/common/protocomm.h \
@@ -216,6 +222,4 @@
  lib/FastLED/src/colorpalettes.h lib/FastLED/src/noise.h \
  lib/FastLED/src/power_mgt.h lib/FastLED/src/fastspi.h \
  lib/FastLED/src/fastspi_bitbang.h lib/FastLED/src/chipsets.h \
- .pio/libdeps/esp32-s2-saola-1/PubSubClient/src/PubSubClient.h src/main.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USB.h \
- /Users/marty/.platformio/packages/framework-arduinoespressif32/cores/esp32/USBCDC.h
+ .pio/libdeps/esp32-s2-saola-1/PubSubClient/src/PubSubClient.h
