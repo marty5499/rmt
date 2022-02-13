@@ -1,4 +1,4 @@
-#include <Arduino.h>
+#include <main.h>
 #include <WiFi.h>
 #include <esp32-hal-cpu.h>
 //*
@@ -16,7 +16,6 @@
 
 #include <FastLED.h>
 #include <PubSubClient.h>
-#include <main.h>
 
 #define NUM_LEDS 25
 #define DATA_PIN 18
@@ -34,6 +33,26 @@ char msg[50];
 int value = 0;
 bool debugState = true;
 
+
+bool sw = true;
+
+
+
+void flashLed()
+{
+  FastLED.clear();
+  FastLED.show();
+  while (true)
+  {
+    leds[12] = 0x050000;
+    FastLED.show();
+    delay(100);
+    leds[12] = 0x000500;
+    FastLED.show();
+    delay(100);
+  }
+}
+
 void debugMsg(const char *msg)
 {
   if (debugState)
@@ -50,6 +69,16 @@ void debugStrMsg(String str)
   }
 }
 
+void IRAM_ATTR TimerHandler0()
+{
+  //USBSerial.print("ITimer0: millis() = ");
+  //USBSerial.println(millis());
+  //sw = !sw;
+  //leds[0] = sw ? 0x030000 : 0x000300;
+  FastLED.show();
+}
+
+
 void callback(char *topic, byte *message, unsigned int length)
 {
   String messageTemp;
@@ -59,10 +88,10 @@ void callback(char *topic, byte *message, unsigned int length)
   }
   debugStrMsg(messageTemp);
   if (++value % 2 == 0)
-    leds[12] = 0x080000;
+    leds[12] = 0x050000;
   else
     leds[12] = 0x000500;
-  FastLED.show();
+  //FastLED.show();
 }
 
 void startMQTT()
@@ -85,7 +114,7 @@ void startWiFi()
   WiFi.begin(_ssid, _password);
   // Warte auf Verbindung
   while ((WiFi.status() != WL_CONNECTED))
-  {
+  { 
     WiFi.begin(_ssid, _password);
     delay(3000);
     debugStrMsg("connecting...");
@@ -100,20 +129,6 @@ void startWiFi()
   }
 }
 
-void flashLed()
-{
-  FastLED.clear();
-  FastLED.show();
-  while (true)
-  {
-    leds[12] = 0x050000;
-    FastLED.show();
-    delay(100);
-    leds[12] = 0x000500;
-    FastLED.show();
-    delay(100);
-  }
-}
 
 void debugMode(bool t)
 {
@@ -153,6 +168,7 @@ void setup()
   debugMode(true);
   debugMsg("GoGoGo...");
   pinMode(DATA_PIN, OUTPUT);
+  ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 30, TimerHandler0);
   initLED(0x050000);
   remote();
   //local();
