@@ -35,27 +35,12 @@ void ESP32Led::Init()
 	if (_debug)
 		Serial.printf("WS2812Led pin=%d\n", _pin);
 	pinMode(_pin, OUTPUT);
-	/*
-	 * find the next available rmt channel
-	 * the ESP32 has 8, the ESP32-C3 has only 4 channels.
-	 */
-	_my_rmt_channel_no = -1;
-	for (int i = 0; i < RMT_CHANNEL_MAX; i++)
-	{
-		if ((_rmt_channel & (1 << i)) == false)
-		{
-			_my_rmt_channel_no = i;
-			_rmt_channel |= (1 << i);
-			break;
-		}
-	}
+	_my_rmt_channel_no = 0;
 	if (_debug)
 	{
 		Serial.printf("rmt_channel: %d\n", _rmt_channel);
 		Serial.printf("_my_rmt_channel_no: %d\n", _my_rmt_channel_no);
 	}
-	ESP_ERROR_CHECK(_my_rmt_channel_no < 0);
-
 	rmt_config_t newconfig = RMT_DEFAULT_CONFIG_TX((gpio_num_t)_pin, (rmt_channel_t)_my_rmt_channel_no);
 	newconfig.clk_div = 2;
 	memcpy(&_config, &newconfig, sizeof(_config));
