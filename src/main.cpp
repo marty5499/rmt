@@ -4,7 +4,7 @@
 
 #include <PubSubClient.h>
 #include <main.h>
-
+// 1:57 , 5:74 , 10:95 , 1 led: 4us
 WS2812Led wsLED(18 /*pin*/, 25 /*num*/);
 USBCDC USBSerial;
 bool refresh = false;
@@ -15,24 +15,13 @@ const char *_password = "webduino";
 const char *mqtt_server = "mqtt1.webduino.io";
 WiFiClient espClient;
 PubSubClient client(espClient);
-long lastMsg = 0;
 char msg[50];
 int value = 0;
-bool debugState = true;
 bool sw = true;
+long lastMsg = 0;
+bool debugState = true;
 
 ESP32Timer ITimer0(0);
-
-void IRAM_ATTR ctrlWS2812()
-{
-  if (!refresh)
-    return;
-  refresh = false;
-  if (sw)
-    wsLED.UpdateAll(wsLED.RED);
-  else
-    wsLED.UpdateAll(wsLED.BLUE);
-}
 
 void debugMsg(const char *msg)
 {
@@ -50,6 +39,18 @@ void debugStrMsg(String str)
   }
 }
 
+void IRAM_ATTR ctrlWS2812()
+{
+  if (!refresh)
+    return;
+  if (sw)
+    wsLED.UpdateAll(wsLED.RED);
+  else
+    wsLED.UpdateAll(wsLED.BLUE);
+
+  refresh = false;
+}
+
 void callback(char *topic, byte *message, unsigned int length)
 {
   String messageTemp;
@@ -59,6 +60,7 @@ void callback(char *topic, byte *message, unsigned int length)
   }
   // debugStrMsg(messageTemp);
   sw = !sw;
+
   refresh = true;
 }
 

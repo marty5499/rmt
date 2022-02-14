@@ -47,10 +47,20 @@ void ESP32Led::Init()
 	rmt_config_t newconfig = RMT_DEFAULT_CONFIG_TX((gpio_num_t)_pin, (rmt_channel_t)_my_rmt_channel_no);
 	newconfig.clk_div = 2;
 	newconfig.mem_block_num = 4;
+	/*
+	newconfig.tx_config.loop_en = 0;
+	newconfig.tx_config.carrier_en = 0;
+	newconfig.tx_config.idle_output_en = 1;
+	//newconfig.tx_config.idle_level = 0;
+	newconfig.tx_config.carrier_duty_percent = 50;
+	//newconfig.tx_config.carrier_freq_hz = 10000;
+	//newconfig.tx_config.carrier_level = 1;
+	newconfig.clk_div = 80;
+	//*/
 	memcpy(&_config, &newconfig, sizeof(_config));
 
 	ESP_ERROR_CHECK(rmt_config(&_config));
-	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, ESP_INTR_FLAG_IRAM|ESP_INTR_FLAG_LEVEL3));
+	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_LEVEL3));
 
 	_led_data_buffer = new rmt_item32_t[(_numLEDs * (_bytesPerColor * 8)) + 1]; // count * bits per led + 1 reset code
 
@@ -125,7 +135,12 @@ void IRAM_ATTR ESP32Led::Show(void)
 	// data includes bits for all leds + plus a 50us reset at the last item.
 	// portDISABLE_INTERRUPTS();
 	// vPortEnterCritical(&mux);
-	ESP_ERROR_CHECK(rmt_write_items(_config.channel, _led_data_buffer, (_numLEDs * (_bytesPerColor * 8)) + 1, false));
+	int num = (_numLEDs * (_bytesPerColor * 8)) + 1;
+	int64_t a = esp_timer_get_time();
+	ESP_ERROR_CHECK(rmt_write_items(_config.channel, _led_data_buffer, num, false));
+	int64_t s = esp_timer_get_time() - a;
+	Serial.print("spendTime:");
+	Serial.println(s);
 	// portENABLE_INTERRUPTS();
 	// vPortExitCritical(&mux);
 }
