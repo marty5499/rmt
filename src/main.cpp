@@ -23,16 +23,15 @@ bool sw = true;
 
 ESP32Timer ITimer0(0);
 
-void IRAM_ATTR TimerHandler0()
+void IRAM_ATTR ctrlWS2812()
 {
-  if(!refresh) return;
+  if (!refresh)
+    return;
   refresh = false;
-  //*
   if (sw)
     wsLED.UpdateAll(wsLED.RED);
   else
     wsLED.UpdateAll(wsLED.BLUE);
-  //*/
 }
 
 void debugMsg(const char *msg)
@@ -58,7 +57,7 @@ void callback(char *topic, byte *message, unsigned int length)
   {
     messageTemp += (char)message[i];
   }
-  //debugStrMsg(messageTemp);
+  // debugStrMsg(messageTemp);
   sw = !sw;
   refresh = true;
 }
@@ -69,7 +68,7 @@ void startMQTT()
   client.setCallback(callback);
   if (client.connect("mqttTest", "webduino", "webduino"))
   {
-    debugMsg("connected");
+    debugMsg("mqtt connected");
     client.subscribe("test5499");
   }
 }
@@ -88,14 +87,7 @@ void startWiFi()
     delay(3000);
     debugStrMsg("connecting...");
   }
-  if (WiFi.status() == WL_CONNECTED)
-  {
-    // debugMsg("" + WiFi.localIP());
-  }
-  else
-  {
-    debugStrMsg("\n ERROR: WiFi Connection not possible!\n");
-  }
+  debugStrMsg("wifi connected.");
 }
 
 void debugMode(bool t)
@@ -125,7 +117,7 @@ void setup()
   //*
   remote();
   wsLED.UpdateAll(wsLED.GREEN);
-  ITimer0.attachInterruptInterval(10 * TIMER0_INTERVAL_MS, TimerHandler0);
+  ITimer0.attachInterruptInterval(10 * TIMER0_INTERVAL_MS, ctrlWS2812);
   //*/
 }
 

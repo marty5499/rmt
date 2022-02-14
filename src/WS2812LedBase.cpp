@@ -7,10 +7,10 @@
 #include "WS2812Led.h"
 #include <string.h>
 
-const float WS2812LedBase::_T0H_SEC = 0.000000400;	// 400ns
-const float WS2812LedBase::_T0L_SEC = 0.000000850;	// 850ns
-const float WS2812LedBase::_T1H_SEC = 0.000000800;	// 800ns
-const float WS2812LedBase::_T1L_SEC = 0.000000450;	// 450ns
+const float WS2812LedBase::_T0H_SEC =  0.000000400;	// 400ns
+const float WS2812LedBase::_T0L_SEC =  0.000000850;	// 850ns
+const float WS2812LedBase::_T1H_SEC =  0.000000850;	// 800ns
+const float WS2812LedBase::_T1L_SEC =  0.000000400;	// 450ns
 const float WS2812LedBase::_TRST_SEC = 0.000050000; // 50us
 
 WS2812LedBase::WS2812LedBase(int pin, int ledCount, LedColorModel colorModel, bool debug)
