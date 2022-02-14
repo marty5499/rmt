@@ -157,7 +157,7 @@ void ws2812_setColors(unsigned int length, rgbVal *array)
 
 
   ws2812_len = (length * 3) * sizeof(uint8_t);
-  ws2812_buffer = malloc(ws2812_len);
+  ws2812_buffer = (uint8_t *)malloc(ws2812_len);
 
   for (i = 0; i < length; i++) {
     ws2812_buffer[0 + i * 3] = array[i].g;

@@ -1,10 +1,3 @@
-/* Created 19 Nov 2016 by Chris Osborn <fozztexx@fozztexx.com>
- * http://insentricity.com
- *
- * Demo of driving WS2812 RGB LEDs using the RMT peripheral.
- *
- * This code is placed in the public domain (or CC0 licensed, at your option).
- */
 #include "ws2812.h"
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
@@ -14,11 +7,11 @@
 #include <driver/gpio.h>
 
 #define WS2812_PIN	18
-
 #define delay_ms(ms) vTaskDelay((ms) / portTICK_RATE_MS)
 
-void rainbow(void *pvParameters)
+void setup()
 {
+  ws2812_init(18);
   const uint8_t anim_step = 10;
   const uint8_t anim_max = 250;
   const uint8_t pixel_count = 25; // Number of your "pixels"
@@ -28,7 +21,6 @@ void rainbow(void *pvParameters)
   rgbVal color2 = makeRGBVal(anim_max, 0, 0);
   uint8_t step2 = 0;
   rgbVal *pixels = (rgbVal *) malloc(sizeof(rgbVal) * pixel_count);
-
 
   while (1) {
     color = color2;
@@ -75,21 +67,10 @@ void rainbow(void *pvParameters)
         break;
       }
     }
-
-    //ws2812_setColors(pixel_count, pixels);
-
+    ws2812_setColors(pixel_count, pixels);
     delay_ms(delay);
   }
-}
 
-void setup()
-{
-  nvs_flash_init();
-  aaa();
-  //ws2812_init(18);
-  xTaskCreate(rainbow, "ws2812 rainbow demo", 4096, NULL, 10, NULL);
-
-  return;
 }
 
 void loop(){
