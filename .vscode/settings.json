@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "ws2812.h": "c",
+        "esp_intr.h": "c",
+        "stdlib.h": "c",
+        "rmt.h": "c"
+    }
+}

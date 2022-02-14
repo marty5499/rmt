@@ -1,129 +1,97 @@
-#include <WiFi.h>
-#include <esp32-hal-cpu.h>
-#include "WS2812Led.h"
+/* Created 19 Nov 2016 by Chris Osborn <fozztexx@fozztexx.com>
+ * http://insentricity.com
+ *
+ * Demo of driving WS2812 RGB LEDs using the RMT peripheral.
+ *
+ * This code is placed in the public domain (or CC0 licensed, at your option).
+ */
+#include "ws2812.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <soc/rmt_struct.h>
+#include <esp_system.h>
+#include <nvs_flash.h>
+#include <driver/gpio.h>
 
-#include <PubSubClient.h>
-#include <main.h>
-// 1:57 , 5:74 , 10:95 , 1 led: 4us
-WS2812Led wsLED(18 /*pin*/, 25 /*num*/);
-USBCDC USBSerial;
-bool refresh = false;
+#define WS2812_PIN	18
 
-// WiFi
-const char *_ssid = "webduino.io";
-const char *_password = "webduino";
-const char *mqtt_server = "mqtt1.webduino.io";
-WiFiClient espClient;
-PubSubClient client(espClient);
-char msg[50];
-int value = 0;
-bool sw = true;
-long lastMsg = 0;
-bool debugState = true;
+#define delay_ms(ms) vTaskDelay((ms) / portTICK_RATE_MS)
 
-ESP32Timer ITimer0(0);
-
-void debugMsg(const char *msg)
+void rainbow(void *pvParameters)
 {
-  if (debugState)
-  {
-    Serial.println(msg);
+  const uint8_t anim_step = 10;
+  const uint8_t anim_max = 250;
+  const uint8_t pixel_count = 25; // Number of your "pixels"
+  const uint8_t delay = 25; // duration between color changes
+  rgbVal color = makeRGBVal(anim_max, 0, 0);
+  uint8_t step = 0;
+  rgbVal color2 = makeRGBVal(anim_max, 0, 0);
+  uint8_t step2 = 0;
+  rgbVal *pixels = (rgbVal *) malloc(sizeof(rgbVal) * pixel_count);
+
+
+  while (1) {
+    color = color2;
+    step = step2;
+
+    for (uint8_t i = 0; i < pixel_count; i++) {
+      pixels[i] = color;
+
+      if (i == 1) {
+        color2 = color;
+        step2 = step;
+      }
+
+      switch (step) {
+      case 0:
+        color.g += anim_step;
+        if (color.g >= anim_max)
+          step++;
+        break;
+      case 1:
+        color.r -= anim_step;
+        if (color.r == 0)
+          step++;
+        break;
+      case 2:
+        color.b += anim_step;
+        if (color.b >= anim_max)
+          step++;
+        break;
+      case 3:
+        color.g -= anim_step;
+        if (color.g == 0)
+          step++;
+        break;
+      case 4:
+        color.r += anim_step;
+        if (color.r >= anim_max)
+          step++;
+        break;
+      case 5:
+        color.b -= anim_step;
+        if (color.b == 0)
+          step = 0;
+        break;
+      }
+    }
+
+    //ws2812_setColors(pixel_count, pixels);
+
+    delay_ms(delay);
   }
-}
-
-void debugStrMsg(String str)
-{
-  if (debugState)
-  {
-    Serial.println(str);
-  }
-}
-
-void IRAM_ATTR ctrlWS2812()
-{
-  if (!refresh)
-    return;
-  if (sw)
-    wsLED.UpdateAll(wsLED.RED);
-  else
-    wsLED.UpdateAll(wsLED.BLUE);
-
-  refresh = false;
-}
-
-void callback(char *topic, byte *message, unsigned int length)
-{
-  String messageTemp;
-  for (int i = 0; i < length; i++)
-  {
-    messageTemp += (char)message[i];
-  }
-  // debugStrMsg(messageTemp);
-  sw = !sw;
-
-  refresh = true;
-}
-
-void startMQTT()
-{
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
-  if (client.connect("mqttTest", "webduino", "webduino"))
-  {
-    debugMsg("mqtt connected");
-    client.subscribe("test5499");
-  }
-}
-
-void startWiFi()
-{
-  WiFi.setAutoConnect(false);
-  WiFi.disconnect(true, true);
-  WiFi.setSleep(false);
-  WiFi.setHostname("ESP32-Test");
-  WiFi.begin(_ssid, _password);
-  // Warte auf Verbindung
-  while ((WiFi.status() != WL_CONNECTED))
-  {
-    WiFi.begin(_ssid, _password);
-    delay(3000);
-    debugStrMsg("connecting...");
-  }
-  debugStrMsg("wifi connected.");
-}
-
-void debugMode(bool t)
-{
-  debugState = t;
-  if (debugState)
-  {
-    USB.begin();
-    Serial.begin(115200);
-  }
-}
-
-void remote()
-{
-  startWiFi();
-  startMQTT();
 }
 
 void setup()
 {
-  setCpuFrequencyMhz(80);
-  debugMode(true);
-  delay(2000);
-  debugMsg("GoGoGo...");
-  wsLED.Brightness(5);
-  wsLED.UpdateAll(wsLED.RED);
-  //*
-  remote();
-  wsLED.UpdateAll(wsLED.GREEN);
-  ITimer0.attachInterruptInterval(10 * TIMER0_INTERVAL_MS, ctrlWS2812);
-  //*/
+  nvs_flash_init();
+  aaa();
+  //ws2812_init(18);
+  xTaskCreate(rainbow, "ws2812 rainbow demo", 4096, NULL, 10, NULL);
+
+  return;
 }
 
-void loop()
-{
-  client.loop();
+void loop(){
+
 }
