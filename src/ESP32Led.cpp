@@ -5,8 +5,12 @@
  */
 
 #include <Arduino.h>
+#include "FreeRTOS/portmacro.h"
+#include "esp_intr_alloc.h"
 #include "ESP32Led.h"
 
+
+portMUX_TYPE mux;
 uint16_t ESP32Led::_rmt_channel = 0;
 
 ESP32Led::~ESP32Led()
@@ -29,6 +33,7 @@ ESP32Led::~ESP32Led()
 
 void ESP32Led::Init()
 {
+	_debug = true;
 	if (_initDone)
 		return;
 	if (_debug)
@@ -42,10 +47,11 @@ void ESP32Led::Init()
 	}
 	rmt_config_t newconfig = RMT_DEFAULT_CONFIG_TX((gpio_num_t)_pin, (rmt_channel_t)_my_rmt_channel_no);
 	newconfig.clk_div = 2;
+	newconfig.mem_block_num = 4;
 	memcpy(&_config, &newconfig, sizeof(_config));
 
 	ESP_ERROR_CHECK(rmt_config(&_config));
-	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, 0));
+	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, ESP_INTR_FLAG_LEVEL2));
 
 	_led_data_buffer = new rmt_item32_t[(_numLEDs * (_bytesPerColor * 8)) + 1]; // count * bits per led + 1 reset code
 
@@ -77,7 +83,7 @@ void ESP32Led::Init()
 	_initDone = true;
 }
 
-void ESP32Led::Show(void)
+void IRAM_ATTR ESP32Led::Show(void)
 {
 	if (!_initDone)
 		Init();
@@ -102,7 +108,7 @@ void ESP32Led::Show(void)
 				{
 					Serial.printf("Led(%d): bit(%d) = %d\n", ledIndex, (ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit, curValue & (1 << bit) ? 1 : 0);
 				}
-				if (curValue & (1 << (7 - bit)))																					 // high bit first
+				if (curValue & (1 << (7 - bit))) // high bit first
 					_led_data_buffer[(ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit] = (rmt_item32_t){_T1H, 1, _T1L, 0}; // bit on signal
 				else
 					_led_data_buffer[(ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit] = (rmt_item32_t){_T0H, 1, _T0L, 0}; // bit off signal
@@ -114,7 +120,11 @@ void ESP32Led::Show(void)
 
 	// finally start transmitting the pattern using the RMT controller,
 	// data includes bits for all leds + plus a 50us reset at the last item.
+	//portDISABLE_INTERRUPTS();
+	//vPortEnterCritical(&mux);
 	ESP_ERROR_CHECK(rmt_write_items(_config.channel, _led_data_buffer, (_numLEDs * (_bytesPerColor * 8)) + 1, false));
+	//portENABLE_INTERRUPTS();
+	//vPortExitCritical(&mux);
 }
 
 int ESP32Led::MaxIntances(void)

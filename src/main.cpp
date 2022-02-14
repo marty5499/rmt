@@ -1,4 +1,3 @@
-#include <Arduino.h>
 #include <WiFi.h>
 #include <esp32-hal-cpu.h>
 #include "WS2812Led.h"
@@ -6,15 +5,13 @@
 #include <PubSubClient.h>
 #include <main.h>
 
-static const uint8_t WS2812LedPin = 18;
-WS2812Led wsLED(WS2812LedPin, 25);
+WS2812Led wsLED(18 /*pin*/, 25 /*num*/);
+USBCDC USBSerial;
 
 // WiFi
 const char *_ssid = "webduino.io";
 const char *_password = "webduino";
 const char *mqtt_server = "mqtt1.webduino.io";
-long cnt = 0;
-
 WiFiClient espClient;
 PubSubClient client(espClient);
 long lastMsg = 0;
@@ -23,26 +20,21 @@ int value = 0;
 bool debugState = true;
 bool sw = true;
 
-USBCDC USBSerial;
 ESP32Timer ITimer0(0);
 
-void TimerHandler0()
+void IRAM_ATTR TimerHandler0()
 {
-  // USBSerial.print("ITimer0: millis() = ");
-  // USBSerial.println(millis());
-  //*
   if (sw)
     wsLED.UpdateAll(wsLED.RED);
   else
     wsLED.UpdateAll(wsLED.BLUE);
-  //*/
 }
 
 void debugMsg(const char *msg)
 {
   if (debugState)
   {
-    USBSerial.println(msg);
+    Serial.println(msg);
   }
 }
 
@@ -50,7 +42,7 @@ void debugStrMsg(String str)
 {
   if (debugState)
   {
-    USBSerial.println(str);
+    Serial.println(str);
   }
 }
 
@@ -106,7 +98,7 @@ void debugMode(bool t)
   if (debugState)
   {
     USB.begin();
-    USBSerial.begin(115200);
+    Serial.begin(115200);
   }
 }
 
@@ -120,13 +112,15 @@ void setup()
 {
   setCpuFrequencyMhz(80);
   debugMode(true);
+  delay(2000);
   debugMsg("GoGoGo...");
   wsLED.Brightness(3);
   wsLED.UpdateAll(wsLED.RED);
-  delay(100);
+  //*
   remote();
   wsLED.UpdateAll(wsLED.GREEN);
-  ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 10, TimerHandler0);
+  ITimer0.attachInterruptInterval(10 * TIMER0_INTERVAL_MS, TimerHandler0);
+  //*/
 }
 
 void loop()

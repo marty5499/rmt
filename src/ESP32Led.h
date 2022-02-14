@@ -9,6 +9,7 @@
 
 #include "WS2812LedBase.h"
 #include "driver/rmt.h"
+#include "main.h"
 
 
 class ESP32Led : public WS2812LedBase {
