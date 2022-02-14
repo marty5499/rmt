@@ -9,7 +9,6 @@
 #include "esp_intr_alloc.h"
 #include "ESP32Led.h"
 
-
 portMUX_TYPE mux;
 uint16_t ESP32Led::_rmt_channel = 0;
 
@@ -33,7 +32,7 @@ ESP32Led::~ESP32Led()
 
 void ESP32Led::Init()
 {
-	_debug = true;
+	//_debug = true;
 	if (_initDone)
 		return;
 	if (_debug)
@@ -51,7 +50,7 @@ void ESP32Led::Init()
 	memcpy(&_config, &newconfig, sizeof(_config));
 
 	ESP_ERROR_CHECK(rmt_config(&_config));
-	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, ESP_INTR_FLAG_LEVEL2));
+	ESP_ERROR_CHECK(rmt_driver_install(_config.channel, 0, ESP_INTR_FLAG_IRAM|ESP_INTR_FLAG_LEVEL3));
 
 	_led_data_buffer = new rmt_item32_t[(_numLEDs * (_bytesPerColor * 8)) + 1]; // count * bits per led + 1 reset code
 
@@ -88,12 +87,16 @@ void IRAM_ATTR ESP32Led::Show(void)
 	if (!_initDone)
 		Init();
 	ESP_ERROR_CHECK(rmt_wait_tx_done(_config.channel, portMAX_DELAY)); // wait for pending LED TX request
-	/*
-	 * convert the RGB color (24 bits) into the RMT buffer consisting of
-	 * rmt_item32_t items for each bit, 24 bit (3 x 8) per led
-	 */
+																	   /*
+																		* convert the RGB color (24 bits) into the RMT buffer consisting of
+																		* rmt_item32_t items for each bit, 24 bit (3 x 8) per led
+																		*/
 	for (uint32_t ledIndex = 0; ledIndex < _numLEDs; ledIndex++)
 	{ // index of current LED
+		if (_debug)
+		{
+			Serial.printf("\nLed(%2d): = ", ledIndex);
+		}
 		for (int colorIndex = 0; colorIndex < _bytesPerColor; colorIndex++)
 		{ // index 0=Green, 1=Red, 2=Blue, 3=White
 			u_int8_t curValue = *(_ledValues + (ledIndex * _bytesPerColor) + colorIndex);
@@ -106,9 +109,9 @@ void IRAM_ATTR ESP32Led::Show(void)
 			{
 				if (_debug)
 				{
-					Serial.printf("Led(%d): bit(%d) = %d\n", ledIndex, (ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit, curValue & (1 << bit) ? 1 : 0);
+					Serial.printf("%d", curValue & (1 << bit) ? 1 : 0);
 				}
-				if (curValue & (1 << (7 - bit))) // high bit first
+				if (curValue & (1 << (7 - bit)))																					 // high bit first
 					_led_data_buffer[(ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit] = (rmt_item32_t){_T1H, 1, _T1L, 0}; // bit on signal
 				else
 					_led_data_buffer[(ledIndex * (_bytesPerColor * 8)) + (colorIndex * 8) + bit] = (rmt_item32_t){_T0H, 1, _T0L, 0}; // bit off signal
@@ -120,11 +123,11 @@ void IRAM_ATTR ESP32Led::Show(void)
 
 	// finally start transmitting the pattern using the RMT controller,
 	// data includes bits for all leds + plus a 50us reset at the last item.
-	//portDISABLE_INTERRUPTS();
-	//vPortEnterCritical(&mux);
+	// portDISABLE_INTERRUPTS();
+	// vPortEnterCritical(&mux);
 	ESP_ERROR_CHECK(rmt_write_items(_config.channel, _led_data_buffer, (_numLEDs * (_bytesPerColor * 8)) + 1, false));
-	//portENABLE_INTERRUPTS();
-	//vPortExitCritical(&mux);
+	// portENABLE_INTERRUPTS();
+	// vPortExitCritical(&mux);
 }
 
 int ESP32Led::MaxIntances(void)

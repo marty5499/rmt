@@ -7,6 +7,7 @@
 
 WS2812Led wsLED(18 /*pin*/, 25 /*num*/);
 USBCDC USBSerial;
+bool refresh = false;
 
 // WiFi
 const char *_ssid = "webduino.io";
@@ -24,10 +25,14 @@ ESP32Timer ITimer0(0);
 
 void IRAM_ATTR TimerHandler0()
 {
+  if(!refresh) return;
+  refresh = false;
+  //*
   if (sw)
     wsLED.UpdateAll(wsLED.RED);
   else
     wsLED.UpdateAll(wsLED.BLUE);
+  //*/
 }
 
 void debugMsg(const char *msg)
@@ -53,8 +58,9 @@ void callback(char *topic, byte *message, unsigned int length)
   {
     messageTemp += (char)message[i];
   }
-  debugStrMsg(messageTemp);
+  //debugStrMsg(messageTemp);
   sw = !sw;
+  refresh = true;
 }
 
 void startMQTT()
@@ -114,7 +120,7 @@ void setup()
   debugMode(true);
   delay(2000);
   debugMsg("GoGoGo...");
-  wsLED.Brightness(3);
+  wsLED.Brightness(5);
   wsLED.UpdateAll(wsLED.RED);
   //*
   remote();
