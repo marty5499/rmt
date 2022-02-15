@@ -14,7 +14,7 @@ USBCDC USBSerial;
 rmt_data_t led_data[NR_OF_ALL_BITS];
 rmt_obj_t *rmt_send = NULL;
 
-int color[] = {0x0, 0x0, 0x5}; // GRB value
+int color[] = {0x0, 0x5, 0x0}; // GRB value
 
 void flash(int led_index)
 {
@@ -30,9 +30,9 @@ void flash(int led_index)
                 if ((color[col] & (1 << (7 - bit))) && (led == led_index))
                 {
                     led_data[i].level0 = 1;
-                    led_data[i].duration0 = 8;
+                    led_data[i].duration0 = 8; // 0.8
                     led_data[i].level1 = 0;
-                    led_data[i].duration1 = 4;
+                    led_data[i].duration1 = 4; // 0.4
                 }
                 else
                 {
@@ -45,18 +45,16 @@ void flash(int led_index)
             }
         }
     }
-    // make the led travel in the pannel
-    if ((++led_index) >= NR_OF_LEDS)
-    {
-        led_index = 0;
-    }
 }
 
 void setup()
 {
+    pinMode(18, OUTPUT);
+    digitalWrite(18, LOW);
+
     USB.begin();
     Serial.begin(115200);
-    delay(1000);
+    delay(1500);
     Serial.println("GoGOGo...");
     if ((rmt_send = rmtInit(18, RMT_TX_MODE, RMT_MEM_256)) == NULL)
     {
@@ -64,31 +62,31 @@ void setup()
     }
     float realTick = rmtSetTick(rmt_send, 100);
     Serial.printf("real tick set to: %fns\n", realTick);
-    // Send the data
-    // rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
+    //  Send the data
+    //  rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
     Serial.println("fill led");
-    rmt_set_tx_intr_en(RMT_CHANNEL_0, false);
-    delay(10);
-    for (int i = 0; i < NR_OF_LEDS; i++)
+    // rmt_tx_stop(RMT_CHANNEL_0);
+    rmt_set_tx_loop_mode(RMT_CHANNEL_0, false);
+    // rmt_write_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS/NR_OF_LEDS, false);
+    rmt_tx_start(RMT_CHANNEL_0, true);
+    delay(100);
+    while (true)
     {
-        Serial.print("flash:");
-        Serial.println(i);
-        flash(i);
-        //*/
-        //rmtLoop(rmt_send, led_data, NR_OF_ALL_BITS);
-        //rmt_write_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, false);
-        //*/
-        //rmt_tx_memory_reset(RMT_CHANNEL_0);
-        rmt_tx_start(RMT_CHANNEL_0, false);
-        delay(10);
-        Serial.print("NR_OF_ALL_BITS:");
-        Serial.println(NR_OF_ALL_BITS);
-        rmt_fill_tx_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, 0);
-        delay(10);
-        //*/
-        delay(500);
+    digitalWrite(18, LOW);
+    delay(10);
+        for (int i = 0; i < NR_OF_LEDS; i++)
+        {
+            flash(i);
+            // Serial.println(i);
+            //*/
+            //  rmtLoop(rmt_send, led_data, NR_OF_ALL_BITS);
+            // rmt_write_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, false);
+            //*/
+            rmt_fill_tx_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, 0);
+            delay(100);
+        }
     }
-        rmt_tx_stop(RMT_CHANNEL_0);
+    rmt_tx_stop(RMT_CHANNEL_0);
     Serial.println("done.");
 }
 
