@@ -6,16 +6,17 @@
 #include "driver/rmt.h"
 
 USBCDC USBSerial;
-#define NR_OF_LEDS 25
+#define NR_OF_LEDS 10
 #define NR_OF_ALL_BITS 24 * NR_OF_LEDS
+
+//
 
 rmt_data_t led_data[NR_OF_ALL_BITS];
 rmt_obj_t *rmt_send = NULL;
 
-int color[] = {0x5, 0x0, 0x0}; // GRB value
-int led_index = 10;
+int color[] = {0x0, 0x0, 0x5}; // GRB value
 
-void flash()
+void flash(int led_index)
 {
     // Init data with only one led ON
     int led, col, bit;
@@ -49,17 +50,6 @@ void flash()
     {
         led_index = 0;
     }
-    // Send the data
-    //rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
-    Serial.println("fill led");
-    rmt_set_tx_intr_en(RMT_CHANNEL_0, false);
-    rmt_tx_memory_reset(RMT_CHANNEL_0);
-    rmt_tx_start(RMT_CHANNEL_0,true);
-    delay(10);
-    rmt_fill_tx_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_LEDS, 0);
-    delay(10);
-    rmt_tx_stop(RMT_CHANNEL_0);
-    Serial.println("done.");
 }
 
 void setup()
@@ -74,7 +64,32 @@ void setup()
     }
     float realTick = rmtSetTick(rmt_send, 100);
     Serial.printf("real tick set to: %fns\n", realTick);
-    flash();
+    // Send the data
+    // rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
+    Serial.println("fill led");
+    rmt_set_tx_intr_en(RMT_CHANNEL_0, false);
+    delay(10);
+    for (int i = 0; i < NR_OF_LEDS; i++)
+    {
+        Serial.print("flash:");
+        Serial.println(i);
+        flash(i);
+        //*/
+        //rmtLoop(rmt_send, led_data, NR_OF_ALL_BITS);
+        //rmt_write_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, false);
+        //*/
+        //rmt_tx_memory_reset(RMT_CHANNEL_0);
+        rmt_tx_start(RMT_CHANNEL_0, false);
+        delay(10);
+        Serial.print("NR_OF_ALL_BITS:");
+        Serial.println(NR_OF_ALL_BITS);
+        rmt_fill_tx_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, 0);
+        delay(10);
+        //*/
+        delay(500);
+    }
+        rmt_tx_stop(RMT_CHANNEL_0);
+    Serial.println("done.");
 }
 
 void loop()
