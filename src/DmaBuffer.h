@@ -1,35 +1,77 @@
 /*
- * DmaBuffer.h
- *
- *  Created on: 01-Nov-2020
- *      Author: Dhananjay
- */
+	Author: bitluni 2019
+	License: 
+	Creative Commons Attribution ShareAlike 2.0
+	https://creativecommons.org/licenses/by-sa/2.0/
+	
+	For further details check out: 
+		https://youtube.com/bitlunislab
+		https://github.com/bitluni
+		http://bitluni.net
+*/
+#pragma once
+#include "Log.h"
 
-#ifndef MAIN_DMABUFFER_H_
-#define MAIN_DMABUFFER_H_
-#include "stdint.h"
-#include "stdbool.h"
-#include <stdio.h>
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/uart.h"
-#include "driver/gpio.h"
-#include "esp32/rom/lldesc.h"
-
-
-typedef struct DMABufferI2S
+class DMABufferI2S
 {
+  public:
 	lldesc_t descriptor;
-	uint8_t *buffer; //uint8_t
-	int index;
-}DMABufferI2S;
+	 uint8_t *buffer; //uint8_t
 
-DMABufferI2S *allocate(int bytes, bool clear,int index);
-bool initI(uint8_t *buffer, int bytes, bool clear,int index);
-bool init(int bytes, bool clear,int Index);
-void next(DMABufferI2S *next,int index);
-int sampleCount(int index);
-void destroy(int index);
+	static DMABufferI2S *allocate(int bytes, bool clear = true)
+	{
+        DMABufferI2S *b = (DMABufferI2S *)heap_caps_malloc(sizeof(DMABufferI2S), MALLOC_CAP_DMA);
+		if (!b)
+        {
+			//DEBUG_PRINTLN("Failed to alloc DMABuffer class");
+            Serial.println("impossible");
+        }
+        b->init(bytes, clear);
+		return b;
+	}
 
-#endif /* MAIN_DMABUFFER_H_ */
+	bool init(uint8_t *buffer, int bytes, bool clear = true) //uint8_t
+	{
+		if (!buffer)
+			return false;
+		this->buffer = buffer;
+		if (clear)
+			for (int i = 0; i < bytes*4; i++)
+				buffer[i] = 0;
+        descriptor.length = bytes*4;//bytes
+        descriptor.size = descriptor.length/4;
+		descriptor.owner = 1;
+		descriptor.sosf = 1;
+		descriptor.buf = (uint8_t *)buffer; //uint8_t
+		descriptor.offset = 0;
+		descriptor.empty = 0;
+		descriptor.eof = 1;
+		descriptor.qe.stqe_next = 0;
+		return true;
+	}
+
+	bool init(int bytes, bool clear = true)
+	{
+		return init((uint8_t *)heap_caps_malloc(bytes*4, MALLOC_CAP_DMA), bytes, clear); //uint8_t
+	}
+
+	void next(DMABufferI2S *next)
+	{
+		descriptor.qe.stqe_next = &(next->descriptor);
+	}
+
+	int sampleCount() const
+	{
+		return descriptor.length / 4;
+	}
+
+	void destroy()
+	{
+		if (buffer)
+		{
+			free(buffer);
+			buffer = 0;
+		}
+		free(this);
+	}
+};
