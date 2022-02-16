@@ -4,6 +4,7 @@
         "esp_intr.h": "c",
         "stdlib.h": "c",
         "rmt.h": "c",
-        "arduino.h": "c"
+        "arduino.h": "c",
+        "iomanip": "cpp"
     }
 }
