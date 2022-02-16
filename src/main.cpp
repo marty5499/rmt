@@ -15,8 +15,8 @@
 
 #define LED_NUMBER 25
 #define PIXEL_SIZE 12 // each colour takes 4 bytes
-#define ZERO_BUFFER 48 * LED_NUMBER
 #define SAMPLE_RATE (93750)
+#define ZERO_BUFFER 48 * LED_NUMBER
 #define I2S_NUM (I2S_NUM_0)
 #define I2S_DO_IO (18)
 #define I2S_DI_IO (-1)
@@ -100,45 +100,21 @@ void ws2812_update(ws2812_pixel_t *pixels)
 //////////////////////////////////////////////////////////////////////////////////////////
 ws2812_pixel_t led[LED_NUMBER];
 
-void red()
-{
-    for (int i = 0; i < LED_NUMBER; i++)
-    {
-        led[i].green = 0;
-        led[i].red = 1;
-        led[i].blue = 0;
-    }
-    ws2812_update(led);
-}
-
-void blue()
-{
-    for (int i = 0; i < LED_NUMBER; i++)
-    {
-        led[i].green = 0;
-        led[i].red = 0;
-        led[i].blue = 1;
-    }
-    ws2812_update(led);
-}
-
 void startTest()
 {
     ws2812_init();
-    Serial.println("led");
-    //while (true)
-   // {
-        Serial.println("red");
-        red();
-        delay(100);
-        //Serial.println("blue");
-        //blue();
-        //delay(100);
-   // }
 }
 
-void flash()
+void flash(uint8_t r,uint8_t g,uint8_t b)
 {
+    Serial.println("flash:");
+    for (int i = 0; i < LED_NUMBER; i++)
+    {
+        led[i].green = r;
+        led[i].red = g;
+        led[i].blue = b;
+    }
+    ws2812_update(led);
 }
 
 //
@@ -152,12 +128,17 @@ void onMsg(String msg)
     Serial.println(msg);
     sw = !sw;
     refresh = true;
-    flash();
+    if(sw){
+        flash(1,0,0);
+    }else {
+        flash(0,1,0);
+    }
+    refresh = false;
 }
 
 void init()
 {
     Serial.println("init...");
-    // startTimer(1000*1000);
     startTest();
+    // startTimer(1000*1000);
 }
