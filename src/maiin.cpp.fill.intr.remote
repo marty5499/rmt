@@ -6,11 +6,13 @@
 #include "freertos/event_groups.h"
 #include "esp32-hal.h"
 #include "ESP32TimerInterrupt.h"
+#include "driver/rmt.h"
+
 ///// rmt //////
 ESP32Timer ITimer0(0);
 
 ///// rmt //////
-#define NR_OF_LEDS 25
+#define NR_OF_LEDS 10
 #define NR_OF_ALL_BITS 24 * NR_OF_LEDS
 rmt_data_t led_data[NR_OF_ALL_BITS];
 rmt_obj_t *rmt_send = NULL;
@@ -40,7 +42,7 @@ void rmtSetup()
     Serial.printf("real tick set to: %fns\n", realTick);
 }
 
-void flash()
+void IRAM_ATTR flash()
 {
     int led, col, bit;
     int i = 0;
@@ -72,15 +74,16 @@ void flash()
     {
         led_index = 0;
     }
-    rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
+    rmt_fill_tx_items(RMT_CHANNEL_0, (const rmt_item32_t *)led_data, NR_OF_ALL_BITS, 0);
+    // rmtWrite(rmt_send, led_data, NR_OF_ALL_BITS);
 }
 
 void TimerHandler0()
 {
     if (refresh)
     {
-        flash();
         refresh = false;
+        flash();
     }
 }
 
@@ -123,16 +126,6 @@ void startWiFi()
     Serial.println("wifi connected.");
 }
 
-void debugMode(bool t)
-{
-    debugState = t;
-    if (debugState)
-    {
-        USB.begin();
-        Serial.begin(115200);
-    }
-}
-
 void remote()
 {
     startWiFi();
@@ -142,11 +135,14 @@ void remote()
 void setup()
 {
     setCpuFrequencyMhz(240);
-    debugMode(true);
+    USB.begin();
+    Serial.begin(115200);
     delay(2000);
     rmtSetup();
     Serial.println("GoGoGo...");
     remote();
+    rmt_tx_start(RMT_CHANNEL_0, true);
+    // rmt_tx_stop(RMT_CHANNEL_0);
     ITimer0.attachInterruptInterval(10 * 1000, TimerHandler0);
 }
 
