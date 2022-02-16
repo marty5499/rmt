@@ -5,6 +5,15 @@
         "stdlib.h": "c",
         "rmt.h": "c",
         "arduino.h": "c",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "*.test": "cpp",
+        "array": "cpp",
+        "deque": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp"
     }
 }
