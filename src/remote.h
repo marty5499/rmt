@@ -59,6 +59,7 @@ void startWiFi()
     {
         WiFi.begin(_ssid, _password);
         delay(3000);
+        Serial.println("connecting...");
     }
     Serial.println("wifi connected");
 }
@@ -78,7 +79,7 @@ void setup()
     setCpuFrequencyMhz(240);
     delay(2000);
     Serial.println("setup...");
-    //remote();
+    remote();
     init();
 }
 
