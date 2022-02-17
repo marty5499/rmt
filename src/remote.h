@@ -6,9 +6,11 @@
 #include <PubSubClient.h>
 #include "ESP32TimerInterrupt.h"
 
+#ifdef ESP32S2
 // USB
 USBCDC USBSerial;
 #define Serial USBSerial
+#endif
 
 // WiFi
 char msg[50];
@@ -52,7 +54,7 @@ void startWiFi()
 {
     WiFi.setAutoConnect(false);
     WiFi.disconnect(true, true);
-    
+
     WiFi.setHostname("ESP32-Test");
     WiFi.begin(_ssid, _password);
     while ((WiFi.status() != WL_CONNECTED))
@@ -74,12 +76,14 @@ void timerTrigger();
 
 void setup()
 {
+#ifdef ESP32S2
     USB.begin();
+#endif
     Serial.begin(115200);
     setCpuFrequencyMhz(240);
     delay(2000);
     Serial.println("setup...");
-    //remote();
+    // remote();
     init();
 }
 
