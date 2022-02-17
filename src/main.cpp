@@ -15,7 +15,7 @@
 
 #define LED_NUMBER 25
 #define PIXEL_SIZE 12 // each colour takes 4 bytes
-#define ZERO_BUFFER 4
+#define ZERO_BUFFER 48
 #define SAMPLE_RATE (93750)
 #define I2S_NUM (I2S_NUM_0)
 #define I2S_DO_IO (18)
@@ -120,11 +120,11 @@ void local()
 {
     while (true)
     {
-        delay(50);
+        delay(10);
         flash(0, 0, 1);
-        delay(50);
+        delay(10);
         flash(1, 0, 0);
-        delay(50);
+        delay(10);
         flash(0, 1, 0);
     }
 }
@@ -136,7 +136,7 @@ void timerTrigger()
 
 void onMsg(String msg)
 {
-    //Serial.println(msg);
+    // Serial.println(msg);
     sw = !sw;
     refresh = true;
     if (sw)
@@ -153,7 +153,7 @@ void onMsg(String msg)
 void init()
 {
     ws2812_init();
-    //local();
+    // local();
     Serial.println("init...");
     // startTimer(1000*1000);
 }
