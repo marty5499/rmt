@@ -15,7 +15,7 @@
 
 #define LED_NUMBER 25
 #define PIXEL_SIZE 12 // each colour takes 4 bytes
-#define ZERO_BUFFER 48
+#define ZERO_BUFFER 4
 #define SAMPLE_RATE (93750)
 #define I2S_NUM (I2S_NUM_0)
 #define I2S_DO_IO (18)
@@ -55,10 +55,14 @@ typedef struct
 void ws2812_init()
 {
     size_buffer = LED_NUMBER * PIXEL_SIZE;
+    i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
+    i2s_set_pin(I2S_NUM, &pin_config);
 }
 
 void ws2812_update(ws2812_pixel_t *pixels)
 {
+    size_t bytes_written = 0;
+
     for (uint16_t i = 0; i < LED_NUMBER; i++)
     {
         int loc = i * PIXEL_SIZE;
@@ -78,6 +82,11 @@ void ws2812_update(ws2812_pixel_t *pixels)
         out_buffer[loc + 10] = bitpatterns[pixels[i].blue >> 2 & 0x03];
         out_buffer[loc + 11] = bitpatterns[pixels[i].blue & 0x03];
     }
+
+    i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
+    i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
+    vTaskDelay(pdMS_TO_TICKS(10));
+    i2s_zero_dma_buffer(I2S_NUM);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +111,9 @@ void flash(uint8_t r, uint8_t g, uint8_t b)
             led[i].blue = 0;
         }
     }
+    i2s_start(I2S_NUM);
     ws2812_update(led);
+    i2s_stop(I2S_NUM);
 }
 
 void local()
@@ -123,11 +134,9 @@ void timerTrigger()
     Serial.println("timer trigger..");
 }
 
-uint32_t cnt = 0;
-
 void onMsg(String msg)
 {
-    // Serial.println(msg);
+    //Serial.println(msg);
     sw = !sw;
     refresh = true;
     if (sw)
@@ -139,30 +148,12 @@ void onMsg(String msg)
         flash(0, 0, 50);
     }
     refresh = false;
-    size_t bytes_written = 0;
-    i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
-    i2s_set_pin(I2S_NUM, &pin_config);
-    i2s_start(I2S_NUM);
-    i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    Serial.print("(");
-    Serial.print(++cnt);
-    Serial.print(")");
-    Serial.print(bytes_written);
-    Serial.print(",");
-    i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
-    Serial.println(bytes_written);
-    delay(10);
-    vTaskDelay(pdMS_TO_TICKS(20));
-    i2s_zero_dma_buffer(I2S_NUM);
-    //i2s_stop(I2S_NUM);
-    i2s_driver_uninstall(I2S_NUM);
-
 }
 
 void init()
 {
     ws2812_init();
-    // local();
+    //local();
     Serial.println("init...");
     // startTimer(1000*1000);
 }
