@@ -26,7 +26,7 @@ i2s_config_t i2s_config = {
     .sample_rate = SAMPLE_RATE,
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,
-    .communication_format = I2S_COMM_FORMAT_STAND_MSB,
+    .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S | I2S_COMM_FORMAT_STAND_MSB),
     //.intr_alloc_flags = 7, //Interrupt level 1
     .dma_buf_count = 2,
     .dma_buf_len = LED_NUMBER * PIXEL_SIZE,
@@ -42,8 +42,18 @@ static uint8_t out_buffer[LED_NUMBER * PIXEL_SIZE] = {0};
 static uint8_t off_buffer[ZERO_BUFFER] = {0};
 static uint16_t size_buffer;
 
-static const uint16_t bitpatterns[4] = {0x88, 0x8e, 0xe8, 0xee};
-// static const uint16_t bitpatterns[4] = {0x88, 0x88, 0x84, 0x84};
+/*
+uint16_t low = 0b0010;
+uint16_t high = 0b0011;
+
+static uint16_t bitpatterns[4] = {
+    (low << 4) | low,
+    (low << 4) | high,
+    (high << 4) | low,
+    (high << 4) | high,
+};
+//*/
+static const uint16_t bitpatterns[4] = {0x88, 0x84, 0x48, 0x66};
 
 typedef struct
 {
@@ -52,7 +62,7 @@ typedef struct
     uint8_t blue;
 } ws2812_pixel_t;
 
-void ws2812_init()
+void ws2812_init() 
 {
     size_buffer = LED_NUMBER * PIXEL_SIZE;
     i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
@@ -67,20 +77,20 @@ void ws2812_update(ws2812_pixel_t *pixels)
     {
         int loc = i * PIXEL_SIZE;
 
-        out_buffer[loc + 0] = bitpatterns[pixels[i].green >> 6 & 0x03];
-        out_buffer[loc + 1] = bitpatterns[pixels[i].green >> 4 & 0x03];
-        out_buffer[loc + 2] = bitpatterns[pixels[i].green >> 2 & 0x03];
-        out_buffer[loc + 3] = bitpatterns[pixels[i].green & 0x03];
+        out_buffer[loc + 0] = bitpatterns[pixels[i].green & 0x03];
+        out_buffer[loc + 1] = bitpatterns[(pixels[i].green >> 2) & 0x03];
+        out_buffer[loc + 2] = bitpatterns[(pixels[i].green >> 4) & 0x03];
+        out_buffer[loc + 3] = bitpatterns[(pixels[i].green >> 6) & 0x03];
 
-        out_buffer[loc + 4] = bitpatterns[pixels[i].red >> 6 & 0x03];
-        out_buffer[loc + 5] = bitpatterns[pixels[i].red >> 4 & 0x03];
-        out_buffer[loc + 6] = bitpatterns[pixels[i].red >> 2 & 0x03];
-        out_buffer[loc + 7] = bitpatterns[pixels[i].red & 0x03];
+        out_buffer[loc + 4] = bitpatterns[(pixels[i].red >> 0) & 0x03];
+        out_buffer[loc + 5] = bitpatterns[(pixels[i].red >> 2) & 0x03];
+        out_buffer[loc + 6] = bitpatterns[(pixels[i].red >> 4) & 0x03];
+        out_buffer[loc + 7] = bitpatterns[(pixels[i].red >> 6) & 0x03];
 
-        out_buffer[loc + 8] = bitpatterns[pixels[i].blue >> 6 & 0x03];
-        out_buffer[loc + 9] = bitpatterns[pixels[i].blue >> 4 & 0x03];
-        out_buffer[loc + 10] = bitpatterns[pixels[i].blue >> 2 & 0x03];
-        out_buffer[loc + 11] = bitpatterns[pixels[i].blue & 0x03];
+        out_buffer[loc + 8] = bitpatterns[(pixels[i].blue >> 0) & 0x03];
+        out_buffer[loc + 9] = bitpatterns[(pixels[i].blue >> 2) & 0x03];
+        out_buffer[loc + 10] = bitpatterns[(pixels[i].blue >> 4) & 0x03];
+        out_buffer[loc + 11] = bitpatterns[(pixels[i].blue >> 6) & 0x03];
     }
 
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
@@ -98,7 +108,8 @@ void flash(uint8_t r, uint8_t g, uint8_t b)
 {
     for (int i = 0; i < LED_NUMBER; i++)
     {
-        if (i == 12)
+        //if (i < 100)
+         if (i == 12)
         {
             led[i].green = r;
             led[i].red = g;
@@ -118,15 +129,17 @@ void flash(uint8_t r, uint8_t g, uint8_t b)
 
 void local()
 {
+    //*
     while (true)
     {
-        delay(10);
-        flash(0, 0, 1);
-        delay(10);
-        flash(1, 0, 0);
-        delay(10);
-        flash(0, 1, 0);
+        int8_t i = 0;
+        for (i = -16; i <= 16; i++)
+        {
+            flash(i < 0 ? i * -1 : i, 0, 0);
+            delay(50);
+        }
     }
+    //*/
 }
 //
 void timerTrigger()
@@ -141,11 +154,11 @@ void onMsg(String msg)
     refresh = true;
     if (sw)
     {
-        flash(100, 0, 0);
+        flash(3, 0, 0);
     }
     else
     {
-        flash(0, 0, 50);
+        flash(0, 0, 3);
     }
     refresh = false;
 }
@@ -153,7 +166,7 @@ void onMsg(String msg)
 void init()
 {
     ws2812_init();
-    // local();
+    local();
     Serial.println("init...");
     // startTimer(1000*1000);
 }
