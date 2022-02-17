@@ -78,7 +78,7 @@ void setup()
     setCpuFrequencyMhz(240);
     delay(2000);
     Serial.println("setup...");
-    remote();
+    //remote();
     init();
 }
 
