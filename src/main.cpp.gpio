@@ -1,0 +1,59 @@
+#include <remote.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+
+uint8_t pin = 4;
+uint16_t bits = 0;
+uint16_t cnt = 0;
+uint16_t bit_low = 600;
+uint16_t bit_high = 600;
+bool level = false;
+
+void timerTrigger()
+{
+    if (bits == 25)
+        return;
+    if (bits == 24)
+    {
+        digitalWrite(pin, LOW);
+        Serial.println("");
+        Serial.println('done');
+        bits++;
+    }
+    if (cnt == 3)
+    {
+        digitalWrite(pin, LOW);
+        level = false;
+    }
+    if (cnt < 9)
+    {
+        Serial.print(level ? "1" : "0");
+    }
+    else
+    {
+        cnt = 0;
+        level = true;
+        digitalWrite(pin, HIGH);
+        Serial.print(" ");
+    }
+    ++cnt;
+    ++bits;
+}
+
+void onMsg(String msg)
+{
+}
+
+//  Low: 300ns , 900ns
+// High: 600ns , 600ns
+void init()
+{
+    pinMode(pin, OUTPUT);
+    level = true;
+    // digitalWrite(pin, HIGH);
+    Serial.println("init...");
+    delay(100);
+    // startTimer(100);
+    startTimer(1000 * 1000);
+}

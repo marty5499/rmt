@@ -52,6 +52,7 @@ void startMQTT()
 
 void startWiFi()
 {
+    WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setAutoConnect(false);
     WiFi.disconnect(true, true);
 
@@ -81,9 +82,7 @@ void setup()
 #endif
     Serial.begin(115200);
     setCpuFrequencyMhz(240);
-    delay(2000);
     Serial.println("setup...");
-    // remote();
     init();
 }
 
