@@ -43,7 +43,7 @@ static uint8_t off_buffer[ZERO_BUFFER] = {0};
 static uint16_t size_buffer;
 
 static const uint16_t bitpatterns[4] = {0x88, 0x8e, 0xe8, 0xee};
-//static const uint16_t bitpatterns[4] = {0x88, 0x88, 0x84, 0x84};
+// static const uint16_t bitpatterns[4] = {0x88, 0x88, 0x84, 0x84};
 
 typedef struct
 {
@@ -84,7 +84,7 @@ void ws2812_update(ws2812_pixel_t *pixels)
     }
 
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    //i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
+    // i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(10));
     i2s_zero_dma_buffer(I2S_NUM);
 }
@@ -94,44 +94,36 @@ void ws2812_update(ws2812_pixel_t *pixels)
 //////////////////////////////////////////////////////////////////////////////////////////
 ws2812_pixel_t led[LED_NUMBER];
 
-
 void flash(uint8_t r, uint8_t g, uint8_t b)
 {
     Serial.println("flash:");
     for (int i = 0; i < LED_NUMBER; i++)
     {
-        led[i].green = r;
-        led[i].red = g;
-        led[i].blue = b;
+        if (i == 12)
+        {
+            led[i].green = r;
+            led[i].red = g;
+            led[i].blue = b;
+        }
+        else
+        {
+            led[i].green = 0;
+            led[i].red = 0;
+            led[i].blue = 0;
+        }
     }
     ws2812_update(led);
 }
 
-
-void startTest()
-{
-    ws2812_init();
-    while (true)
-    {
-        delay(500);
-        flash(0, 0, 1);
-        delay(500);
-        flash(1, 0, 0);
-        delay(500);
-        flash(0, 1, 0);
-    }
-}
-
 void local()
 {
-    ws2812_init();
     while (true)
     {
-        delay(500);
+        delay(50);
         flash(0, 0, 1);
-        delay(500);
+        delay(50);
         flash(1, 0, 0);
-        delay(500);
+        delay(50);
         flash(0, 1, 0);
     }
 }
@@ -154,12 +146,13 @@ void onMsg(String msg)
     {
         flash(0, 0, 50);
     }
-    // refresh = false;
+    refresh = false;
 }
 
 void init()
 {
+    ws2812_init();
+    local();
     Serial.println("init...");
-    startTest();
     // startTimer(1000*1000);
 }
