@@ -28,6 +28,7 @@ bool refresh = false;
 ESP32Timer ITimer0(0);
 
 void onMsg(String msg);
+void setting();
 
 void callback(char *topic, byte *message, unsigned int length)
 {
@@ -52,17 +53,20 @@ void startMQTT()
 
 void startWiFi()
 {
-    WiFi.setTxPower(WIFI_POWER_19_5dBm);
-    WiFi.setAutoConnect(false);
+    //WiFi.setTxPower(WIFI_POWER_2dBm);
+    WiFi.setAutoConnect(true);
     WiFi.disconnect(true, true);
-
-    WiFi.setHostname("ESP32-Test");
+    int i = 0;
+    WiFi.setHostname("wa");
+    Serial.print("ssid:" + String(_ssid));
+    Serial.println(" pwd:"+ String(_password));
     WiFi.begin(_ssid, _password);
     while ((WiFi.status() != WL_CONNECTED))
     {
         WiFi.begin(_ssid, _password);
         delay(3000);
-        Serial.println("connecting...");
+        Serial.print("connecting...");
+        Serial.println(i++);
     }
     Serial.println("wifi connected");
 }
@@ -82,8 +86,9 @@ void setup()
 #endif
     Serial.begin(115200);
     setCpuFrequencyMhz(240);
+    delay(1500);
     Serial.println("setup...");
-    init();
+    setting();
 }
 
 void loop()
