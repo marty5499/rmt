@@ -53,7 +53,7 @@ void startMQTT()
 
 void startWiFi()
 {
-    //WiFi.setTxPower(WIFI_POWER_2dBm);
+    WiFi.setTxPower(WIFI_POWER_2dBm);
     WiFi.setAutoConnect(true);
     WiFi.disconnect(true, true);
     int i = 0;
@@ -77,15 +77,12 @@ void remote()
     startMQTT();
 }
 
-void timerTrigger();
-
 void setup()
 {
 #ifdef ESP32S2
     USB.begin();
 #endif
     Serial.begin(115200);
-    setCpuFrequencyMhz(240);
     delay(1500);
     Serial.println("setup...");
     setting();
@@ -94,11 +91,6 @@ void setup()
 void loop()
 {
     client.loop();
-}
-
-void startTimer(unsigned long t)
-{
-    ITimer0.attachInterruptInterval(t, timerTrigger);
 }
 
 #endif

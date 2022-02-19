@@ -1,6 +1,7 @@
 #include <remote.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include "ESP32TimerInterrupt.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -95,8 +96,8 @@ void flash(uint8_t r, uint8_t g, uint8_t b)
 {
     for (int i = 0; i < LED_NUMBER; i++)
     {
-        // if (i < 100)
-        if (i == 12)
+        if (i < 100)
+        // if (i == 12)
         {
             led[i].green = r;
             led[i].red = g;
@@ -128,19 +129,16 @@ void local()
     }
     //*/
 }
-//
-void timerTrigger()
-{
-    Serial.println("timer trigger..");
-}
 
 int fcnt = 0;
+
 void onMsg(String msg)
 {
     Serial.println(msg);
     sw = !sw;
     refresh = true;
-    if (++fcnt > 10)
+    // if (++fcnt > 10)
+    if (fcnt > 10)
     {
         if (fcnt == 10)
         {
@@ -148,6 +146,11 @@ void onMsg(String msg)
         }
         return;
     }
+}
+
+void IRAM_ATTR timerTrigger()
+{
+    sw = !sw;
     if (sw)
     {
         flash(3, 0, 0);
@@ -156,16 +159,17 @@ void onMsg(String msg)
     {
         flash(0, 0, 3);
     }
-    refresh = false;
 }
 
 void setting()
 {
     ws2812_init();
+    flash(0, 0, 3);
+    delay(500);
     // local();
-    flash(0,3,0);
+    flash(0, 3, 0);
     remote();
-    flash(3,0,0);
+    flash(3, 0, 0);
     Serial.println("init...");
-    // startTimer(1000*1000);
+    ITimer0.attachInterruptInterval(100 * 1000, timerTrigger);
 }
