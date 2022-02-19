@@ -3,7 +3,7 @@
 
 #define LED_NUMBER 25
 #define PIXEL_SIZE 12 // each colour takes 4 bytes
-#define ZERO_BUFFER 150
+#define ZERO_BUFFER 250
 #define SAMPLE_RATE (93750)
 #define I2S_NUM (I2S_NUM_0)
 #define I2S_DO_IO (18)
@@ -15,7 +15,7 @@ i2s_config_t i2s_config = {
     .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
     .channel_format = I2S_CHANNEL_FMT_ALL_RIGHT,
     .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S | I2S_COMM_FORMAT_STAND_MSB),
-    .dma_buf_count = 2,
+    .dma_buf_count = 8,
     .dma_buf_len = LED_NUMBER * PIXEL_SIZE,
     .use_apll = false,
 };
@@ -34,10 +34,10 @@ typedef struct
 } ws2812_pixel_t;
 
 
-static uint16_t size_buffer = LED_NUMBER * PIXEL_SIZE;
 ws2812_pixel_t led[LED_NUMBER];
+static uint16_t size_buffer = LED_NUMBER * PIXEL_SIZE;
 static uint8_t out_buffer[LED_NUMBER * PIXEL_SIZE] = {0};
-static uint8_t off_buffer[ZERO_BUFFER] = {0};
+static uint8_t off_buffer[ZERO_BUFFER] = {0x00};
 static const uint16_t bitpatterns[4] = {0x88, 0x8e, 0xe8, 0xee};
 //static const uint16_t bitpatterns[4] = {0x66, 0x6c, 0xc6, 0xcc};
 
@@ -80,11 +80,15 @@ void updateLED()
     // init/deinit stable
     //ws2812_init();
     size_t bytes_written = 0;
-    //i2s_start(I2S_NUM);
+    i2s_start(I2S_NUM);
+    i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
+    i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
+    vTaskDelay(pdMS_TO_TICKS(10));
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(10));
     i2s_zero_dma_buffer(I2S_NUM);
+    i2s_stop(I2S_NUM);
     /*
     i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(10));
