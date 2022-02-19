@@ -34,10 +34,9 @@ i2s_pin_config_t pin_config = {.bck_io_num = -1,
 
 ws2812_pixel_t led[LED_NUMBER];
 static uint16_t size_buffer = LED_NUMBER * PIXEL_SIZE;
-static uint8_t out_buffer[LED_NUMBER * PIXEL_SIZE] = {0};
+static uint8_t out_buffer[LED_NUMBER * PIXEL_SIZE] = {0x88};
 static uint8_t off_buffer[ZERO_BUFFER] = {0x00};
 static const uint16_t bitpatterns[4] = {0x88, 0x8e, 0xe8, 0xee};
-// static const uint16_t bitpatterns[4] = {0x66, 0x6c, 0xc6, 0xcc};
 
 void ws2812_init()
 {
@@ -78,7 +77,10 @@ void updateLED()
     size_t bytes_written = 0;
     i2s_start(I2S_NUM);
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(15));
+    //vTaskDelay(pdMS_TO_TICKS(15));
+    //i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
+    //i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
+    vTaskDelay(pdMS_TO_TICKS(30));
     i2s_zero_dma_buffer(I2S_NUM);
     i2s_stop(I2S_NUM);
 }
