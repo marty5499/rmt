@@ -1,34 +1,34 @@
 #include <remote.h>
 #include <led5x5.h>
 
-bool TimerHandler1(void *timer)
+void onMsg(String msg)
 {
+    Serial.println(msg);
     sw = !sw;
-    // updateLED();
-    Serial.print("state:");
-    Serial.println(sw);
-    return true;
+    flash(0, sw ? 1 : 3, 0, false);
 }
 
-void hello_task(void *pvParameter)
+void IRAM_ATTR refreshLED(void *pvParameter)
 {
     while (true)
     {
         updateLED();
-        vTaskDelay(200 / portTICK_RATE_MS);
+        vTaskDelay(30 / portTICK_RATE_MS);
     }
 }
 
 void setting()
 {
     ws2812_init();
-    // i2s_start(I2S_NUM);
-    flash(3, 0, 0, true);
+    remote();
+    flash(5, 0, 0, true);
     Serial.println("setting...");
-    // ITimer0.attachInterruptInterval(TIMER0_INTERVAL_MS * 1000, TimerHandler1);
-    xTaskCreate(&hello_task, "hello_task", 2048, NULL, 5, NULL);
-    Serial.println("Start timer...");
-    delay(1000);
+    xTaskCreate(&refreshLED, "hello_task", 8192, NULL, 7, NULL);
+    delay(2000);
     flash(0, 0, 5, false);
+}
+
+void appLoop()
+{
     // updateLED();
 }

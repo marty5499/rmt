@@ -4,11 +4,6 @@
 #include "USB.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include "ESP32TimerInterrupt.h"
-
-///// timer //////
-ESP32Timer ITimer0(0);
-#define TIMER0_INTERVAL_MS 500L
 
 // USB
 #ifdef ESP32S2
@@ -27,8 +22,10 @@ const char *mqtt_server = "mqtt1.webduino.io";
 // switch
 bool sw = true;
 bool refresh = false;
+bool openWiFi = false;
 
 extern void onMsg(String msg);
+extern void appLoop();
 extern void setting();
 
 void callback(char *topic, byte *message, unsigned int length)
@@ -54,7 +51,7 @@ void startMQTT()
 
 void startWiFi()
 {
-    WiFi.setTxPower(WIFI_POWER_2dBm);
+    //WiFi.setTxPower(WIFI_POWER_2dBm);
     WiFi.setAutoConnect(true);
     WiFi.disconnect(true, true);
     int i = 0;
@@ -70,6 +67,7 @@ void startWiFi()
         Serial.println(i++);
     }
     Serial.println("wifi connected");
+    openWiFi = true;
 }
 
 void remote()
@@ -92,7 +90,9 @@ void setup()
 
 void loop()
 {
-    client.loop();
+    if(openWiFi)
+        client.loop();
+    appLoop();
 }
 
 #endif
