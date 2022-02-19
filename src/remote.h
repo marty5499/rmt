@@ -51,7 +51,7 @@ void startMQTT()
 
 void startWiFi()
 {
-    //WiFi.setTxPower(WIFI_POWER_2dBm);
+    WiFi.setTxPower(WIFI_POWER_19_5dBm);
     WiFi.setAutoConnect(true);
     WiFi.disconnect(true, true);
     int i = 0;
@@ -82,7 +82,8 @@ void setup()
     USB.begin();
 #endif
     Serial.begin(115200);
-    while (!Serial);
+    while (!Serial)
+        ;
     delay(1500);
     Serial.println("setup...");
     setting();
@@ -90,7 +91,7 @@ void setup()
 
 void loop()
 {
-    if(openWiFi)
+    if (openWiFi)
         client.loop();
     appLoop();
 }
