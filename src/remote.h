@@ -6,8 +6,12 @@
 #include <PubSubClient.h>
 #include "ESP32TimerInterrupt.h"
 
-#ifdef ESP32S2
+///// timer //////
+ESP32Timer ITimer0(0);
+#define TIMER0_INTERVAL_MS 500L
+
 // USB
+#ifdef ESP32S2
 USBCDC USBSerial;
 #define Serial USBSerial
 #endif
@@ -24,11 +28,8 @@ const char *mqtt_server = "mqtt1.webduino.io";
 bool sw = true;
 bool refresh = false;
 
-///// timer //////
-ESP32Timer ITimer0(0);
-
-void onMsg(String msg);
-void setting();
+extern void onMsg(String msg);
+extern void setting();
 
 void callback(char *topic, byte *message, unsigned int length)
 {
@@ -59,7 +60,7 @@ void startWiFi()
     int i = 0;
     WiFi.setHostname("wa");
     Serial.print("ssid:" + String(_ssid));
-    Serial.println(" pwd:"+ String(_password));
+    Serial.println(" pwd:" + String(_password));
     WiFi.begin(_ssid, _password);
     while ((WiFi.status() != WL_CONNECTED))
     {
@@ -83,6 +84,7 @@ void setup()
     USB.begin();
 #endif
     Serial.begin(115200);
+    while (!Serial);
     delay(1500);
     Serial.println("setup...");
     setting();
