@@ -24,7 +24,7 @@ i2s_config_t i2s_config = {
     .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_STAND_I2S | I2S_COMM_FORMAT_STAND_MSB),
     .dma_buf_count = 2,
     .dma_buf_len = LED_NUMBER * PIXEL_SIZE,
-    .use_apll = false,
+    .use_apll = true,
 };
 
 i2s_pin_config_t pin_config = {.bck_io_num = -1,
@@ -38,10 +38,11 @@ static uint8_t out_buffer[LED_NUMBER * PIXEL_SIZE] = {0x88};
 static uint8_t off_buffer[ZERO_BUFFER] = {0x00};
 static const uint16_t bitpatterns[4] = {0x88, 0x8e, 0xe8, 0xee};
 
-void ws2812_init()
+void ws2812_init(bool setPin)
 {
     i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
-    i2s_set_pin(I2S_NUM, &pin_config);
+    if (setPin)
+        i2s_set_pin(I2S_NUM, &pin_config);
 }
 
 void ws2812_deinit()
@@ -77,9 +78,9 @@ void updateLED()
     size_t bytes_written = 0;
     i2s_start(I2S_NUM);
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    //vTaskDelay(pdMS_TO_TICKS(15));
-    //i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    //i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
+    // vTaskDelay(pdMS_TO_TICKS(15));
+    // i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
+    // i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(30));
     i2s_zero_dma_buffer(I2S_NUM);
     i2s_stop(I2S_NUM);

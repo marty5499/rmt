@@ -4,26 +4,38 @@
 uint8_t i = 0;
 void /*IRAM_ATTR*/ onMsg(String msg)
 {
-    i = ++i % 25;
+    //Serial.println(msg);
     refresh = true;
 }
 
-void /*IRAM_ATTR*/ refreshLED(void *pvParameter)
+void IRAM_ATTR mqttCB(void *pvParameter)
 {
     while (true)
     {
-        //*
-        for (int i = -10; i < 10; i++)
-        {
-            if (refresh)
-            {
-                ws2812_init();
-                flash(12, 0, i < 0 ? (-1 * i) << 1 : i << 1, 0, true);
-                ws2812_deinit();
-                refresh = false;
-            }
-            delay(40);
-        }
+        while (!client.loop())
+            ;
+        refresh = true;
+        delay(10);
+    }
+}
+
+void IRAM_ATTR refreshLED(void *pvParameter)
+{
+    while (true)
+    {
+        client.loop();
+        if (!refresh)
+            continue;
+        delay(20);
+        //Serial.println("proc msg..." + String(++i));
+        int8_t j = (++i % 25) - 12;
+        j = j < 0 ? -1 * j : j;
+        //Serial.println("refresh..." + String(j));
+        ws2812_init(false);
+        flash(12, 0, j, 0, true);
+        ws2812_deinit();
+        delay(20);
+        refresh = false;
         //*/
     }
 }
@@ -40,13 +52,14 @@ void setting()
     digitalWrite(18, HIGH);
     pinMode(17, OUTPUT);
     digitalWrite(17, HIGH);
-    ws2812_init();
+    ws2812_init(true);
     flash(12, 0, 10, 0, true);
     remote();
     Serial.println("setting...");
     flash(12, 10, 0, 0, true);
     ws2812_deinit();
-    xTaskCreate(&refreshLED, "led_refresh", 2048, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(&refreshLED, "led_refresh", 8192, NULL, 3/*configMAX_PRIORITIES - 1*/, NULL);
+    // xTaskCreate(&mqttCB, "mqtt_callback", 8192, NULL, 3, NULL);
 }
 
 void appLoop()

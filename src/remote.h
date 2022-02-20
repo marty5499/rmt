@@ -91,8 +91,8 @@ void setup()
 
 void loop()
 {
-    if (openWiFi)
-        client.loop();
+    //if (openWiFi)
+        //client.loop();
     appLoop();
 }
 
