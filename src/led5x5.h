@@ -76,14 +76,11 @@ void ws2812_update(ws2812_pixel_t *pixels)
 void updateLED()
 {
     size_t bytes_written = 0;
-    i2s_start(I2S_NUM);
+    //i2s_start(I2S_NUM);
     i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    // vTaskDelay(pdMS_TO_TICKS(15));
-    // i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
-    // i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
     vTaskDelay(pdMS_TO_TICKS(10));
     i2s_zero_dma_buffer(I2S_NUM);
-    i2s_stop(I2S_NUM);
+    //i2s_stop(I2S_NUM);
 }
 
 void flash(uint8_t n, uint8_t r, uint8_t g, uint8_t b, bool update)
