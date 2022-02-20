@@ -98,7 +98,7 @@ void loop()
 
 void startTimer(unsigned long t)
 {
-    ITimer0.attachInterruptInterval(t, timerTrigger);
+    // ITimer0.attachInterruptInterval(t, timerTrigger);
 }
 
 #endif

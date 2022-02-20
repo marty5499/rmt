@@ -162,9 +162,9 @@ void onMsg(String msg)
 void setting()
 {
     ws2812_init();
-    // local();
+    local();
     flash(0,3,0);
-    remote();
+    //remote();
     flash(3,0,0);
     Serial.println("init...");
     // startTimer(1000*1000);
