@@ -26,7 +26,7 @@ void IRAM_ATTR refreshLED(void *pvParameter)
         client.loop();
         if (!refresh)
             continue;
-        delay(20);
+        //delay(10);
         //Serial.println("proc msg..." + String(++i));
         int8_t j = (++i % 25) - 12;
         j = j < 0 ? -1 * j : j;
@@ -34,7 +34,7 @@ void IRAM_ATTR refreshLED(void *pvParameter)
         ws2812_init(false);
         flash(12, 0, j, 0, true);
         ws2812_deinit();
-        delay(20);
+        //delay(10);
         refresh = false;
         //*/
     }
@@ -58,7 +58,7 @@ void setting()
     Serial.println("setting...");
     flash(12, 10, 0, 0, true);
     ws2812_deinit();
-    xTaskCreate(&refreshLED, "led_refresh", 8192, NULL, 3/*configMAX_PRIORITIES - 1*/, NULL);
+    xTaskCreate(&refreshLED, "led_refresh", 16384, NULL, 6/*configMAX_PRIORITIES - 1*/, NULL);
     // xTaskCreate(&mqttCB, "mqtt_callback", 8192, NULL, 3, NULL);
 }
 

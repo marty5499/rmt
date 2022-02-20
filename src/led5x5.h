@@ -81,7 +81,7 @@ void updateLED()
     // vTaskDelay(pdMS_TO_TICKS(15));
     // i2s_write(I2S_NUM, out_buffer, size_buffer, &bytes_written, portMAX_DELAY);
     // i2s_write(I2S_NUM, off_buffer, ZERO_BUFFER, &bytes_written, portMAX_DELAY);
-    vTaskDelay(pdMS_TO_TICKS(30));
+    vTaskDelay(pdMS_TO_TICKS(10));
     i2s_zero_dma_buffer(I2S_NUM);
     i2s_stop(I2S_NUM);
 }
