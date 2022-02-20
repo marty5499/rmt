@@ -76,3 +76,25 @@ void ws2812_setLED(uint8_t i, uint8_t r, uint8_t g, uint8_t b, bool update = fal
     if (update)
         ws2812_update();
 }
+
+void ws2812_setAllLED(uint8_t r, uint8_t g, uint8_t b, bool update = false)
+{
+    for (uint8_t i = 0; i < 25; i++)
+    {
+        led[i].green = r;
+        led[i].red = g;
+        led[i].blue = b;
+    }
+    if (update)
+        ws2812_update();
+}
+
+void ws2812_clearLED(bool update = false)
+{
+    for (uint8_t i = 0; i < 25; i++)
+    {
+        ws2812_setLED(i, 0, 0, 0);
+    }
+    if (update)
+        ws2812_update();
+}
