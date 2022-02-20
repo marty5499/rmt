@@ -93,7 +93,6 @@ void loop()
 {
     if (openWiFi)
         client.loop();
-    appLoop();
 }
 
 #endif
